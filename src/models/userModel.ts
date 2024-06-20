@@ -27,7 +27,7 @@ export interface UserTypes extends Document{
     profileImage: string;
     lastLogin: Date;
     comparePassword:(password:string) => Promise<boolean>;
-    generateToken:(userID:string) => string;
+    generateToken:(userID:mongoose.Schema.Types.ObjectId) => string;
 }
 
 const userSchema = new mongoose.Schema<UserTypes>({
@@ -87,7 +87,7 @@ userSchema.pre("save", async function(next){
 userSchema.methods.comparePassword = async function(password:string) {
     return await bcryptJS.compare(password, this.password);
 }
-userSchema.methods.generateToken = async function(userID:string) {
+userSchema.methods.generateToken = async function(userID:mongoose.Schema.Types.ObjectId) {
     return jsonwebtoken.sign({id:userID}, "thisissecret", {expiresIn:"3d"});
 }
 
