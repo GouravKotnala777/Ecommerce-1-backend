@@ -41,6 +41,13 @@ export const login  = async(req:Request, res:Response, next:NextFunction) => {
 
         if (!isPasswordMatched) return (next(new ErrorHandler("Wrong email or password 2", 404)));
 
+        const token = await isUserExist.generateToken(isUserExist._id.toString());
+
+        console.log({token});
+        
+
+        res.cookie("userToken", token, {httpOnly:true, secure:true, sameSite:"none", expires: new Date(Date.now() + 604800000)})
+
         res.status(200).json({success:true, message:"Login successfull"});
     } catch (error) {
         console.log(error);
