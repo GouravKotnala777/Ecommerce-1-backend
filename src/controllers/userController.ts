@@ -4,16 +4,21 @@ import {ErrorHandler} from "../utils/utilities";
 
 export const register = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {name, email, password, avatar, phone}:{name:string; email:string; password:string; avatar:string; phone:string;} = req.body;
-        const user = await User.findOne({email});
+        const {name, email, password, avatar, mobile}:{name:string; email:string; password:string; avatar:string; mobile:string;} = req.body;
 
-        if (!req.cookies?.aaToken) return next(new ErrorHandler("User already exists", 401));
+        console.log({name, email, password, avatar, mobile});
+
+        const user = await User.findOne({email});
+        
+        console.log({user});
+
+        if (user) return next(new ErrorHandler("User already exists", 401));
 
         const newUser = await User.create({
-            name, email, password, avatar, phone
+            name, email, password, avatar, mobile
         });
 
-        if (!req.cookies?.aaToken) return next(new ErrorHandler("Internal Server Error", 500));
+        if (!newUser) return next(new ErrorHandler("Internal Server Error", 500));
         
         res.status(200).json({success:true, message:"Registration successfull"});
     } catch (error) {
@@ -21,6 +26,29 @@ export const register = async(req:Request, res:Response, next:NextFunction) => {
         next(error);
     }
 };
+export const login  = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {email, password} = req.body;
+        const user = await User.findOne({email});
+
+        if (!user) return (next(new ErrorHandler("Wrong email or password 1", 404)));
+
+        if (user.password !== password) return (next(new ErrorHandler("Wrong email or password 2", 404)));
+
+        res.status(200).json({success:true, message:"Login successfull"});
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
+
+
+
+
+
+
+
 export const aaGET = async(req:Request, res:Response, next:NextFunction) => {
     try {
         console.log("aaGET has ran");
