@@ -1,5 +1,6 @@
 import mongoose, { Model } from "mongoose";
 import bcryptJS from "bcryptjs";
+import jsonwebtoken from "jsonwebtoken";
 
 interface AddressTypes {
     street: string;
@@ -26,6 +27,7 @@ export interface UserTypes extends Document{
     profileImage: string;
     lastLogin: Date;
     comparePassword:(password:string) => Promise<boolean>;
+    generateToken:(userID:string) => string;
 }
 
 const userSchema = new mongoose.Schema<UserTypes>({
@@ -85,6 +87,10 @@ userSchema.pre("save", async function(next){
 userSchema.methods.comparePassword = async function(password:string) {
     return await bcryptJS.compare(password, this.password);
 }
+userSchema.methods.generateToken = async function(userID:string) {
+    return jsonwebtoken.sign({id:userID}, "thisissecret", {expiresIn:"3d"});
+}
+
 
 const userModel:Model<UserTypes> = mongoose.models.User || mongoose.model<UserTypes>("User", userSchema);
 
