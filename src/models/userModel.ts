@@ -25,6 +25,7 @@ export interface UserTypes extends Document{
     emailVerified: boolean;
     profileImage: string;
     lastLogin: Date;
+    comparePassword:(password:string) => Promise<boolean>;
 }
 
 const userSchema = new mongoose.Schema<UserTypes>({
@@ -80,7 +81,10 @@ userSchema.pre("save", async function(next){
 
     this.password = await bcryptJS.hash(this.password, 6)
     next();
-})
+});
+userSchema.methods.comparePassword = async function(password:string) {
+    return await bcryptJS.compare(password, this.password);
+}
 
 const userModel:Model<UserTypes> = mongoose.models.User || mongoose.model<UserTypes>("User", userSchema);
 
