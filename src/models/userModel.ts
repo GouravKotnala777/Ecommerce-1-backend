@@ -12,7 +12,7 @@ export interface UserTypes extends Document{
     email: string;
     password: string;
     address: AddressTypes;
-    phone: string;
+    mobile: string;
     role: string;
     orderHistory: mongoose.Schema.Types.ObjectId[];
     wishlist: mongoose.Schema.Types.ObjectId[];
@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema<UserTypes>({
         state: String,
         zip: String
     },
-    phone: {
+    mobile: {
         type:String,
         required:true
     },
