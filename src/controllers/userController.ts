@@ -29,11 +29,17 @@ export const register = async(req:Request, res:Response, next:NextFunction) => {
 export const login  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {email, password} = req.body;
-        const user = await User.findOne({email});
+        const isUserExist = await User.findOne({email});
 
-        if (!user) return (next(new ErrorHandler("Wrong email or password 1", 404)));
+        if (!isUserExist) return (next(new ErrorHandler("Wrong email or password 1", 404)));
 
-        if (user.password !== password) return (next(new ErrorHandler("Wrong email or password 2", 404)));
+        const isPasswordMatched = await isUserExist.comparePassword(password);
+
+
+        console.log({isPasswordMatched});
+        
+
+        if (!isPasswordMatched) return (next(new ErrorHandler("Wrong email or password 2", 404)));
 
         res.status(200).json({success:true, message:"Login successfull"});
     } catch (error) {
