@@ -41,7 +41,22 @@ export const login  = async(req:Request, res:Response, next:NextFunction) => {
         next(error);
     }
 };
+export const me  = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {userID} = req.body;
 
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
+        
+        const user = await User.findById(userID);
+
+        if (!user) return next(new ErrorHandler("Login first", 401));
+
+        res.status(200).json({success:true, message:user});
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
 
 
 
