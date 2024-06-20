@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../models/userModel";
 import {ErrorHandler} from "../utils/utilities";
+import { AuthenticatedUserRequest } from "../middlewares/auth";
 
 export const register = async(req:Request, res:Response, next:NextFunction) => {
     try {
@@ -41,12 +42,12 @@ export const login  = async(req:Request, res:Response, next:NextFunction) => {
 
         if (!isPasswordMatched) return (next(new ErrorHandler("Wrong email or password 2", 404)));
 
-        const token = await isUserExist.generateToken(isUserExist._id.toString());
+        const token = await isUserExist.generateToken(isUserExist._id);
 
         console.log({token});
         
 
-        res.cookie("userToken", token, {httpOnly:true, secure:true, sameSite:"none", expires: new Date(Date.now() + 604800000)})
+        res.cookie("userToken", token, {expires: new Date(Date.now() + 604800000)})
 
         res.status(200).json({success:true, message:"Login successfull"});
     } catch (error) {
@@ -56,11 +57,7 @@ export const login  = async(req:Request, res:Response, next:NextFunction) => {
 };
 export const me  = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {userID} = req.body;
-
-        if (!userID) return next(new ErrorHandler("userID not found", 404));
-        
-        const user = await User.findById(userID);
+        const user = (req as AuthenticatedUserRequest).user;
 
         if (!user) return next(new ErrorHandler("Login first", 401));
 
