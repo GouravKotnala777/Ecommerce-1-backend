@@ -1,4 +1,5 @@
 import mongoose, { Model } from "mongoose";
+import bcryptJS from "bcryptjs";
 
 interface AddressTypes {
     street: string;
@@ -73,6 +74,13 @@ const userSchema = new mongoose.Schema<UserTypes>({
 }, {
     timestamps:true
 });
+
+userSchema.pre("save", async function(next){
+    if (!this.isModified("password")) return next();
+
+    this.password = await bcryptJS.hash(this.password, 6)
+    next();
+})
 
 const userModel:Model<UserTypes> = mongoose.models.User || mongoose.model<UserTypes>("User", userSchema);
 
