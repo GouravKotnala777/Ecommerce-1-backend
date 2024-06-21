@@ -74,6 +74,41 @@ export const me  = async(req:Request, res:Response, next:NextFunction) => {
 
 
 
+
+export const updateMe  = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {name, email, password, mobile} = req.body;
+        const user = (req as AuthenticatedUserRequest).user;
+
+        if (!user) return next(new ErrorHandler("user not found", 404));
+
+        const updateMe = await User.findByIdAndUpdate(user._id, {
+            ...(name&&{name}),
+            ...(email&&{email}),
+            ...(password&&{password}),
+            ...(mobile&&{mobile})
+        });
+
+        if (!updateMe) return next(new ErrorHandler("Internal Server Error", 500));
+
+        res.status(200).json({success:true, message:updateMe});
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
 export const aaGET = async(req:Request, res:Response, next:NextFunction) => {
     try {
         console.log("aaGET has ran");
