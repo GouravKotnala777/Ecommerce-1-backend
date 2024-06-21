@@ -98,3 +98,19 @@ export const singleProducts = async(req:Request, res:Response, next:NextFunction
         next(error);
     }
 };
+export const deleteProduct = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {productID} = req.params;
+
+        if (!productID) return (next(new ErrorHandler("productID not found", 404)));
+        
+        const product = await Product.findByIdAndDelete(productID);
+
+        if (!product) return (next(new ErrorHandler("Product not found", 404)));
+        
+        res.status(200).json({success:true, message:"Product deleted successfully"});
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
