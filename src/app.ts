@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import bodyParser from "body-parser";
 import cors from "cors";
 import connectDatabase from "./config/db";
+import productRouter from "./routers/productRouter";
 
 config({path:"./.env"});
 
@@ -23,6 +24,7 @@ app.use(cors({
 connectDatabase(process.env.DATABASE_URI as string);
 
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/product", productRouter);
 
 app.get("/test", (req, res, next) => {
     return res.status(200).json({success:true, message:`server is running at port no ${process.env.PORT}`})
