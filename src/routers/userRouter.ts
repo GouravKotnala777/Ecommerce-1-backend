@@ -13,6 +13,7 @@ userRouter.route("/update").put(isUserAuthenticated, updateMe);
 userRouter.route("/logout").post(isUserAuthenticated, logout);
 
 
+
 // =============== Admin's Routes
 userRouter.route("/search").post(isUserAuthenticated, findUser);
 

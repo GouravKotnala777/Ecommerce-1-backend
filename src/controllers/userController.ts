@@ -67,14 +67,6 @@ export const me  = async(req:Request, res:Response, next:NextFunction) => {
         next(error);        
     }
 };
-
-
-
-
-
-
-
-
 export const updateMe  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {name, email, password, mobile} = req.body;
