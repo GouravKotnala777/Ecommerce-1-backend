@@ -70,3 +70,15 @@ export const createProduct = async(req:Request, res:Response, next:NextFunction)
         next(error);        
     }
 };
+export const allProducts = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const products = await Product.find();
+
+        if (products.length === 0) return (next(new ErrorHandler("No product exits", 400)));
+        
+        res.status(200).json({success:true, message:products});
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
