@@ -97,6 +97,20 @@ export const updateMe  = async(req:Request, res:Response, next:NextFunction) => 
         next(error);        
     }
 };
+export const logout  = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const user = (req as AuthenticatedUserRequest).user;
+
+        if (!user) return next(new ErrorHandler("user not found", 404));
+
+        res.cookie("userToken", "");
+        res.status(200).json({success:true, message:"Logout successfull"});
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
+
 
 
 
