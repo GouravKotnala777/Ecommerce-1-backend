@@ -28,3 +28,15 @@ export const isUserAuthenticated = async(req:Request, res:Response, next:NextFun
         next(error);        
     }
 }
+export const isUserAdmin = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const loggedInUser = (req as AuthenticatedUserRequest).user;
+
+        if (loggedInUser.role === "user") return next(new ErrorHandler("Only admin can access this route", 403));
+
+        next();
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
