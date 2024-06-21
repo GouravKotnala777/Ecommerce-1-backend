@@ -114,3 +114,52 @@ export const deleteProduct = async(req:Request, res:Response, next:NextFunction)
         next(error);
     }
 };
+export const updateProduct = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {productID} = req.params;
+        const {
+            name,
+            description,
+            price,
+            category,
+            stock,
+            images,
+            rating,
+            sku,
+            discount,
+            brand,
+            height,
+            width,
+            depth,
+            weight,
+            tags
+        }:CreateProductBodyTypes = req.body;
+
+        if (!productID) return (next(new ErrorHandler("productID not found", 404)));
+        
+        const product = await Product.findByIdAndUpdate(productID, {
+            ...(name&&{name}),
+            ...(description&&{description}),
+            ...(price&&{price}),
+            ...(category&&{category}),
+            ...(stock&&{stock}),
+            ...(images&&{images}),
+            ...(rating&&{rating}),
+            ...(sku&&{sku}),
+            ...(discount&&{discount}),
+            ...(brand&&{brand}),
+            ...(height&&{height}),
+            ...(width&&{width}),
+            ...(depth&&{depth}),
+            ...(weight&&{weight}),
+            ...(tags?.length !== 0 &&{tags})
+        });
+
+        if (!product) return (next(new ErrorHandler("Product not found", 404)));
+        
+        res.status(200).json({success:true, message:"Product updated successfully"});
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
