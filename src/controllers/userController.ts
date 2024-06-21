@@ -111,7 +111,34 @@ export const logout  = async(req:Request, res:Response, next:NextFunction) => {
     }
 };
 
+// ================  Admin's Controllers
+export const findUser  = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {userIDOrEmailOrName} = req.body;
 
+        console.log({userIDOrEmailOrName});
+
+        const searchedUser = await User.find({
+            $or:[
+                {
+                    name:{$regex:userIDOrEmailOrName, $options:"i"}
+                },
+                {
+                    email:{$regex:userIDOrEmailOrName, $options:"i"}
+                }
+            ]
+        });
+
+        if (searchedUser.length === 0) return next(new ErrorHandler("User not found", 404));
+
+        console.log({searchedUser});
+
+        res.status(200).json({success:true, message:searchedUser});
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
 
 
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { aaGET, aaPOST, login, logout, me, register, updateMe } from "../controllers/userController";
+import { aaGET, aaPOST, findUser, login, logout, me, register, updateMe } from "../controllers/userController";
 import { isUserAuthenticated } from "../middlewares/auth";
 
 const userRouter = express.Router();
@@ -13,5 +13,7 @@ userRouter.route("/update").put(isUserAuthenticated, updateMe);
 userRouter.route("/logout").post(isUserAuthenticated, logout);
 
 
+// =============== Admin's Routes
+userRouter.route("/search").post(isUserAuthenticated, findUser);
 
 export default userRouter;
