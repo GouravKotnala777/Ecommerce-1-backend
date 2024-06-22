@@ -8,6 +8,7 @@ import cors from "cors";
 import connectDatabase from "./config/db";
 import productRouter from "./routers/productRouter";
 import cartRouter from "./routers/cartRouter";
+import reviewRouter from "./routers/reviewRouter";
 
 config({path:"./.env"});
 
@@ -27,6 +28,7 @@ connectDatabase(process.env.DATABASE_URI as string);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/product", productRouter);
 app.use("/api/v1/cart", cartRouter);
+app.use("/api/v1/review", reviewRouter);
 
 app.get("/test", (req, res, next) => {
     return res.status(200).json({success:true, message:`server is running at port no ${process.env.PORT}`})
