@@ -73,3 +73,19 @@ export const addToCart = async(req:Request, res:Response, next:NextFunction) => 
         next(error);        
     }
 };
+export const myCart = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const userID = (req as AuthenticatedUserRequest).user._id;
+
+        if (!userID) return (next(new ErrorHandler("userID not found", 404)));
+        
+        const cart = await Cart.findOne({userID});
+
+        if (!cart) return (next(new ErrorHandler("Cart not found", 404)));
+        
+        res.status(200).json({success:true, message:cart});
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
