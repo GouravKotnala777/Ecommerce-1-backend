@@ -113,6 +113,18 @@ export const removeFromCart = async(req:Request, res:Response, next:NextFunction
         next(error);        
     }
 };
+export const allCarts = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const Carts = await Cart.find();
+
+        if (Carts.length === 0) return (next(new ErrorHandler("No cart exits", 404)));
+        
+        res.status(200).json({success:true, message:Carts});
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
 export const myCart = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const userID = (req as AuthenticatedUserRequest).user._id;
