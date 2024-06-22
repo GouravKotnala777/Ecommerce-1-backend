@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Model } from "mongoose";
 
 export interface ProductTypes {
     name:string;
@@ -8,12 +8,7 @@ export interface ProductTypes {
     stock: number;
     images: string[];
     rating: number;
-    reviews: {
-        userId: mongoose.Schema.Types.ObjectId;
-        comment: string;
-        rating: number;
-        createdAt: Date;
-    }[];
+    reviews:mongoose.Schema.Types.ObjectId[];
     sku: string;
     discount: number;
     brand: string;
@@ -40,11 +35,9 @@ const productSchema = new mongoose.Schema<ProductTypes>({
   images: [{type:String}],
   rating: Number,
   reviews: [{
-        userId: mongoose.Schema.Types.ObjectId,
-        comment: String,
-        rating: Number,
-        createdAt: Date
-    }],
+    type:mongoose.Schema.Types.ObjectId,
+    ref:"Review"
+  }],
   sku: String,
   discount: Number,
   brand: String,
@@ -57,7 +50,7 @@ const productSchema = new mongoose.Schema<ProductTypes>({
   tags: [{type:String}]
 });
 
-const productModel = mongoose.models.Product || mongoose.model<ProductTypes>("Product", productSchema);
+const productModel:Model<ProductTypes> = mongoose.models.Product || mongoose.model<ProductTypes>("Product", productSchema);
 
 export default productModel;
 
