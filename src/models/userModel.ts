@@ -69,7 +69,10 @@ const userSchema = new mongoose.Schema<UserTypes>({
     cart: mongoose.Schema.Types.ObjectId,
     resetPasswordToken: String,
     resetPasswordExpires: Date,
-    emailVerified: Boolean,
+    emailVerified:{
+        type:Boolean,
+        default:false
+    },
     profileImage: {
         type:String
     },
