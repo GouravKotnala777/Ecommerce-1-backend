@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import User from "../models/userModel";
 import {ErrorHandler} from "../utils/utilities";
 import { AuthenticatedUserRequest } from "../middlewares/auth";
+import mongoose from "mongoose";
 
 export const register = async(req:Request, res:Response, next:NextFunction) => {
     try {
@@ -102,7 +103,36 @@ export const logout  = async(req:Request, res:Response, next:NextFunction) => {
         next(error);        
     }
 };
+export const addToWishlist  = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {productID} = req.params;
 
+        if (!productID) return next(new ErrorHandler("productID not found", 404));
+
+        const user = await User.findById((req as AuthenticatedUserRequest).user._id);
+
+        const isWishlistedProduct = user?.wishlist.find((productId) => productId.toString() === productID);
+
+        if (!isWishlistedProduct) {
+            user?.wishlist.push(new mongoose.Types.ObjectId(productID));
+
+            await user?.save();
+
+            return res.status(200).json({success:true, message:"Added to wishlist"});
+        }
+        else{
+            const productRemovedfromWishlist = await User.findByIdAndUpdate((req as AuthenticatedUserRequest).user._id, {$pull:{wishlist:new mongoose.Types.ObjectId(productID)}})
+
+            if (!productRemovedfromWishlist) return next(new ErrorHandler("Internal Server Error", 500));
+
+            return res.status(200).json({success:true, message:"Removed from wishlist"});
+        }
+
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
 // ================  Admin's Controllers
 export const findUser  = async(req:Request, res:Response, next:NextFunction) => {
     try {
