@@ -52,3 +52,25 @@ export const createReview = async(req:Request, res:Response, next:NextFunction) 
         next(error)
     }
 };
+export const removeReview = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const userID = (req as AuthenticatedUserRequest).user._id;
+        const {productID} = req.params;
+
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
+        if (!productID) return next(new ErrorHandler("productID not found", 404));
+        
+        const isReviewExist = await Review.findOneAndDelete({userID, productID});
+        
+        if (!isReviewExist) return next(new ErrorHandler("Review not found", 404));
+
+        await Product.findByIdAndUpdate(productID, {
+            $pull:{reviews:isReviewExist._id}
+        })
+
+        res.status(200).json({success:true, message:"Review deleted successfully"});
+    } catch (error) {
+        console.log(error);
+        next(error)
+    }
+};
