@@ -73,6 +73,46 @@ export const addToCart = async(req:Request, res:Response, next:NextFunction) => 
         next(error);        
     }
 };
+export const removeFromCart = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {productID, quantity}:{productID:string; quantity:number;} = req.body;
+
+        const isCartExist = await Cart.findOne({userID:(req as AuthenticatedUserRequest).user._id});
+
+        if (!isCartExist) return next(new ErrorHandler("Cart not exist", 404));
+        
+        const isProductExistInCart = isCartExist.products.find((product) => product.productID.toString() === productID);
+        
+        if (!isProductExistInCart) return next(new ErrorHandler("Product not exist in cart", 404));
+
+        if (isProductExistInCart.quantity > quantity) {
+            isCartExist.products = isCartExist.products.map((q) => {
+                if (q.productID.toString() === productID) {
+                    return {productID:q.productID, quantity:q.quantity-quantity}
+                }
+                else{
+                    return q;
+                }
+            });
+            await isCartExist.save();
+        }
+        else if(isProductExistInCart.quantity === quantity) {
+            const filteredProductsArray = isCartExist.products.filter((product) => product.productID.toString() !== productID);
+
+            isCartExist.products = filteredProductsArray;
+
+            await isCartExist.save();
+        }
+        else{
+            return next(new ErrorHandler(isProductExistInCart.quantity > 1 ? `You only have ${isProductExistInCart.quantity} products in cart` : `You only have ${isProductExistInCart.quantity} product in cart`, 400))
+        }
+
+        res.status(200).json({success:true, message:quantity > 1 ? `${quantity} Products removed from cart`:`${quantity} Product removed from cart`})        
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
 export const myCart = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const userID = (req as AuthenticatedUserRequest).user._id;
