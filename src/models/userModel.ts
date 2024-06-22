@@ -17,7 +17,7 @@ export interface UserTypes extends Document{
     mobile: string;
     role: string;
     orderHistory: mongoose.Schema.Types.ObjectId[];
-    wishlist: mongoose.Schema.Types.ObjectId[];
+    wishlist: mongoose.Types.ObjectId[];
     cart: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
