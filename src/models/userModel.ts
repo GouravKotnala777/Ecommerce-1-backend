@@ -25,10 +25,10 @@ export interface UserTypes extends Document{
     lastLogin: Date;
 
     emailVerified: boolean;
-    resetPasswordToken: string;
-    resetPasswordExpires: Date;
-    verificationToken:string;
-    verificationTokenExpires:Date;
+    resetPasswordToken?: string;
+    resetPasswordExpires?: Date;
+    verificationToken?:string;
+    verificationTokenExpires?:Date;
 
     comparePassword:(password:string) => Promise<boolean>;
     generateToken:(userID:mongoose.Schema.Types.ObjectId) => string;
