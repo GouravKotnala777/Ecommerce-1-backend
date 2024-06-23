@@ -21,11 +21,15 @@ export interface UserTypes extends Document{
     cart: mongoose.Schema.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
-    resetPasswordToken: string;
-    resetPasswordExpires: Date;
-    emailVerified: boolean;
     profileImage: string;
     lastLogin: Date;
+
+    emailVerified: boolean;
+    resetPasswordToken: string;
+    resetPasswordExpires: Date;
+    verificationToken:string;
+    verificationTokenExpires:Date;
+
     comparePassword:(password:string) => Promise<boolean>;
     generateToken:(userID:mongoose.Schema.Types.ObjectId) => string;
 }
@@ -69,6 +73,8 @@ const userSchema = new mongoose.Schema<UserTypes>({
     cart: mongoose.Schema.Types.ObjectId,
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+    verificationToken:String,
+    verificationTokenExpires:Date,
     emailVerified:{
         type:Boolean,
         default:false
