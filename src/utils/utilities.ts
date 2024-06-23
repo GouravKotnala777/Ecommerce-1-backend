@@ -18,7 +18,7 @@ export const sendToken = async(model:(mongoose.Document<unknown, {}, UserTypes> 
     try {
         const token = await model?.generateToken(model?._id);
 
-        res.cookie("userToken", token, {expires: new Date(Date.now() + 604800000)})
+        res.cookie("userToken", token, {expires: new Date(Date.now() + 604800000)});
     } catch (error) {
         console.log(error);
         next(error);
