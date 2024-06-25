@@ -1,5 +1,5 @@
 import express from "express";
-import { aaGET, aaPOST, addToWishlist, findUser, login, logout, me, register, updateMe } from "../controllers/userController";
+import { aaGET, aaPOST, addToWishlist, findUser, login, logout, me, register, updateMe, verifyEmail } from "../controllers/userController";
 import { isUserAuthenticated } from "../middlewares/auth";
 
 const userRouter = express.Router();
@@ -11,6 +11,7 @@ userRouter.route("/login").post(login);
 userRouter.route("/me").get(isUserAuthenticated, me);
 userRouter.route("/update").put(isUserAuthenticated, updateMe);
 userRouter.route("/logout").post(isUserAuthenticated, logout);
+userRouter.route("/verifyemail").post(verifyEmail);
 userRouter.route("/:productID/wishlist").put(isUserAuthenticated, addToWishlist);
 
 
