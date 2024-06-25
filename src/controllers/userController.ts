@@ -3,6 +3,9 @@ import User from "../models/userModel";
 import {ErrorHandler, sendToken} from "../utils/utilities";
 import { AuthenticatedUserRequest } from "../middlewares/auth";
 import mongoose from "mongoose";
+import { VERIFY } from "../constants/constants";
+import sendMail from "../utils/mailer.util";
+
 
 export const register = async(req:Request, res:Response, next:NextFunction) => {
     try {
@@ -45,9 +48,15 @@ export const login  = async(req:Request, res:Response, next:NextFunction) => {
 
         if (!isPasswordMatched) return (next(new ErrorHandler("Wrong email or password 2", 404)));
 
-        await sendToken(isUserExist, res, next);
+        if (isUserExist.emailVerified === true) {
+            await sendToken(isUserExist, res, next);
+            return res.status(200).json({success:true, message:"Login successfull"});
+        }
+        else{
+            sendMail(isUserExist.email, VERIFY, isUserExist._id, next)
+            return res.status(200).json({success:true, message:"Now verify your email"});
+        }
 
-        res.status(200).json({success:true, message:"Login successfull"});
     } catch (error) {
         console.log(error);
         next(error);
@@ -158,7 +167,6 @@ export const findUser  = async(req:Request, res:Response, next:NextFunction) => 
         next(error);        
     }
 };
-
 
 
 
