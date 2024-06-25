@@ -139,6 +139,33 @@ export const addToWishlist  = async(req:Request, res:Response, next:NextFunction
         next(error);
     }
 };
+export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {verificationToken, emailType}:{verificationToken:string; emailType:string;} = req.body;
+
+        console.log({verificationToken, emailType});
+        
+        if (emailType === VERIFY) {
+            const user = await User.findOne({verificationToken, verificationTokenExpires:{$gt:Date.now()}});
+    
+            if (!user) return next(new ErrorHandler("User not found", 404));
+            if (user.verificationToken === undefined) return next(new ErrorHandler("verificationToken not found", 404));
+            
+            user.verificationToken = undefined;
+            user.verificationTokenExpires = undefined;
+            user.emailVerified = true;
+
+            await user.save();
+
+            await sendToken(user, res, next);
+
+            return res.status(200).json({success:true, message:"Email verified successfully"});
+        }
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
 // ================  Admin's Controllers
 export const findUser  = async(req:Request, res:Response, next:NextFunction) => {
     try {
