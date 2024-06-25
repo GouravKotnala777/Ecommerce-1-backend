@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { ErrorHandler } from "../utils/utilities";
 import Product from "../models/productModel";
+import { uploadOnCloudinary } from "../utils/cloudinary.util";
 
 interface CreateProductBodyTypes {
     name:string;
@@ -22,25 +23,11 @@ interface CreateProductBodyTypes {
 
 export const createProduct = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {
-            name,
-            description,
-            price,
-            category,
-            stock,
-            images,
-            rating,
-            sku,
-            discount,
-            brand,
-            height,
-            width,
-            depth,
-            weight,
-            tags
-        }:CreateProductBodyTypes = req.body;
+        const {name, description, price, category, stock, images, rating, sku, discount, brand, height, width, depth, weight, tags}:CreateProductBodyTypes = req.body;
         
         console.log({name, description, price, category, stock, images, rating, sku, discount, brand, height, width, depth, weight, tags});    
+        console.log({file:req.file?.path});
+        
 
         if (!name || !description || !price || !category || !stock || !sku || !brand) return next(new ErrorHandler("All fields are requried", 400));
         
@@ -62,7 +49,10 @@ export const createProduct = async(req:Request, res:Response, next:NextFunction)
 
         if (!product) return next(new ErrorHandler("Internal Server Error", 500));
 
+        const photo = await uploadOnCloudinary(req.file?.path as string);
+
         console.log({product});
+        console.log({photo});
 
         res.status(200).json({success:true, message:"Product created successfully"});        
     } catch (error) {
