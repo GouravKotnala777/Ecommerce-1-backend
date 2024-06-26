@@ -9,6 +9,7 @@ import connectDatabase from "./config/db";
 import productRouter from "./routers/productRouter";
 import cartRouter from "./routers/cartRouter";
 import reviewRouter from "./routers/reviewRouter";
+import { v2 as cloudinary } from "cloudinary";
 
 config({path:"./.env"});
 
@@ -22,6 +23,13 @@ app.use(cors({
     origin:[`${process.env.CLIENT_URL}` as string],
     credentials: true
 }));
+
+
+cloudinary.config({
+    cloud_name:process.env.CLOUDINARY_CLOUD_NAME as string,
+    api_key:process.env.CLOUDINARY_API_KEY as string,
+    api_secret:process.env.CLOUDINARY_API_SECRET as string
+  });
 
 connectDatabase(process.env.DATABASE_URI as string);
 
