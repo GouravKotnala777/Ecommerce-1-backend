@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { ErrorHandler } from "../utils/utilities";
 import Product from "../models/productModel";
 import { uploadOnCloudinary } from "../utils/cloudinary.util";
+import { UploadApiResponse } from "cloudinary";
 
 interface CreateProductBodyTypes {
     name:string;
@@ -24,35 +25,16 @@ interface CreateProductBodyTypes {
 export const createProduct = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {name, description, price, category, stock, images, rating, sku, discount, brand, height, width, depth, weight, tags}:CreateProductBodyTypes = req.body;
-        
-        console.log({name, description, price, category, stock, images, rating, sku, discount, brand, height, width, depth, weight, tags});    
-        console.log({file:req.file?.path});
-        
 
         if (!name || !description || !price || !category || !stock || !sku || !brand) return next(new ErrorHandler("All fields are requried", 400));
         
-        const product = await Product.create({name,
-            description,
-            price,
-            category,
-            stock,
-            images,
-            rating,
-            sku,
-            discount,
-            brand,
-            height,
-            width,
-            depth,
-            weight,
-            tags});
+        const photo:UploadApiResponse|null = await uploadOnCloudinary(req.file?.path as string, "Ecommerce1/products");
 
-        if (!product) return next(new ErrorHandler("Internal Server Error", 500));
+        if (!photo?.secure_url) return next(new ErrorHandler("secure_url not found", 404));
 
-        const photo = await uploadOnCloudinary(req.file?.path as string);
+        const product = await Product.create({name, description, price, category, stock, images:photo?.secure_url, rating, sku, discount, brand, height, width, depth, weight, tags});
 
-        console.log({product});
-        console.log({photo});
+        if (!product) return next(new ErrorHandler("Internal Server Error", 500));            
 
         res.status(200).json({success:true, message:"Product created successfully"});        
     } catch (error) {
