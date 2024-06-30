@@ -1,8 +1,10 @@
-import { NextFunction, Response } from "express";
+import { CookieOptions, NextFunction, Response } from "express";
 import mongoose, { Model } from "mongoose";
 import { UserTypes } from "../models/userModel";
 
-
+export const cookieOptions:CookieOptions = {
+    httpOnly:true, secure:true, sameSite:"none", expires: new Date(Date.now() + 604800000)
+};
 
 export class ErrorHandler extends Error {
     constructor(public message:string, public statusCode:number){
@@ -18,7 +20,7 @@ export const sendToken = async(model:(mongoose.Document<unknown, {}, UserTypes> 
     try {
         const token = await model?.generateToken(model?._id);
 
-        res.cookie("userToken", token, {expires: new Date(Date.now() + 604800000)});
+        res.cookie("userToken", token, cookieOptions);
     } catch (error) {
         console.log(error);
         next(error);
