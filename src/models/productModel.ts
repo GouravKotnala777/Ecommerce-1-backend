@@ -28,19 +28,38 @@ const productSchema = new mongoose.Schema<ProductTypes>({
   },
   description:{
     type:String,
+    required:true
   },
-  price: Number,
-  category: String,
-  stock: Number,
+  price: {
+    type:Number,
+    required:true
+  },
+  category: {
+    type:String,
+    required:true
+  },
+  stock: {
+    type:Number,
+    default:0
+  },
   images: [{type:String}],
-  rating: Number,
+  rating: {
+    type:Number,
+    default:0
+  },
   reviews: [{
     type:mongoose.Schema.Types.ObjectId,
     ref:"Review"
   }],
   sku: String,
-  discount: Number,
-  brand: String,
+  discount: {
+    type:Number,
+    default:0
+  },
+  brand: {
+    type:String,
+    required:true
+  },
   dimensions: {
     height: Number,
     width: Number,
