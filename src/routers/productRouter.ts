@@ -9,7 +9,7 @@ const productRouter = express.Router();
 
 productRouter.route("/all").get(allProducts);
 productRouter.route("/new").post(isUserAuthenticated, isUserAdmin, upload.single("images"), createProduct);
-productRouter.route("/productID").get(singleProducts)
+productRouter.route("/:productID").get(singleProducts)
                                 .delete(isUserAuthenticated, isUserAdmin, deleteProduct)
                                 .put(isUserAuthenticated, isUserAdmin, updateProduct);
 
