@@ -26,7 +26,7 @@ export const createProduct = async(req:Request, res:Response, next:NextFunction)
     try {
         const {name, description, price, category, stock, images, rating, sku, discount, brand, height, width, depth, weight, tags}:CreateProductBodyTypes = req.body;
 
-        if (!name || !description || !price || !category || !stock || !sku || !brand) return next(new ErrorHandler("All fields are requried", 400));
+        if (!name || !description || !price || !category || !stock || !brand) return next(new ErrorHandler("All fields are requried", 400));
         
         const photo:UploadApiResponse|null = await uploadOnCloudinary(req.file?.path as string, "Ecommerce1/products");
 
