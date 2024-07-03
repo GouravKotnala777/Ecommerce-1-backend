@@ -7,23 +7,26 @@ import Product from "../models/productModel";
 
 export const createReview = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {rating, comment} = req.body;
+        const {rating, comment}:{rating:number; comment:string;} = req.body;
         const userID = (req as AuthenticatedUserRequest).user._id;
         const {productID} = req.params;
-
-        console.log({rating, comment, userID, productID});
-        
 
         if (!rating || !comment) return next(new ErrorHandler("All fields are required", 400));
         if (!userID) return next(new ErrorHandler("userID not found", 404));
         if (!productID) return next(new ErrorHandler("productID not found", 404));
         
         const isReviewExist = await Review.findOne({userID, productID});
+        const product = await Product.findById(productID);
+
+        if (!product) return next(new ErrorHandler("Product not found", 404));
 
         if (isReviewExist) {
+            product.rating = ((product.rating * product.reviews.length) + (rating - isReviewExist.rating)) / (product.reviews.length);
+
             isReviewExist.rating = rating;
             isReviewExist.comment = comment;
 
+            await product.save();
             await isReviewExist.save();
 
             return res.status(200).json({success:true, message:"Review updated successfully"});
@@ -38,10 +41,11 @@ export const createReview = async(req:Request, res:Response, next:NextFunction) 
             
             if (!review) return next(new ErrorHandler("Internal Server Error", 500));
 
-            await Product.findByIdAndUpdate(productID, {
-                $push:{reviews:review._id}
-            });
-            
+            product.reviews.push(review._id);
+            product.rating = ((product.rating * (product.reviews.length - 1)) + rating) / product.reviews.length;
+
+            await product.save();
+
             return res.status(200).json({success:true, message:"Review created successfully"});
         }
 
