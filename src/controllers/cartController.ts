@@ -131,7 +131,7 @@ export const myCart = async(req:Request, res:Response, next:NextFunction) => {
 
         if (!userID) return (next(new ErrorHandler("userID not found", 404)));
         
-        const cart = await Cart.findOne({userID});
+        const cart = await Cart.findOne({userID}).populate({model:"Product", path:"products.productID", select:"category name price rating description"});
 
         if (!cart) return (next(new ErrorHandler("Cart not found", 404)));
         
