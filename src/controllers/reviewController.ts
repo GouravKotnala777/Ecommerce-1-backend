@@ -68,9 +68,14 @@ export const removeReview = async(req:Request, res:Response, next:NextFunction) 
         
         if (!isReviewExist) return next(new ErrorHandler("Review not found", 404));
 
-        await Product.findByIdAndUpdate(productID, {
-            $pull:{reviews:isReviewExist._id}
-        })
+        const product = await Product.findById(productID);
+
+        if (!product) return next(new ErrorHandler("Product not found", 404));
+
+        product.rating = ((product.rating * product.reviews.length) - isReviewExist.rating) / (product.reviews.length - 1);
+        product.reviews = product.reviews.filter((review) => review.toString() !== isReviewExist._id.toString());
+
+        await product.save();
 
         res.status(200).json({success:true, message:"Review deleted successfully"});
     } catch (error) {
