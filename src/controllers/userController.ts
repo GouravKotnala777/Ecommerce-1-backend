@@ -139,6 +139,20 @@ export const addToWishlist  = async(req:Request, res:Response, next:NextFunction
         next(error);
     }
 };
+export const myWishlist  = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const userID = (req as AuthenticatedUserRequest).user._id;
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
+        const user = await User.findById(userID).populate({model:"Product", path:"wishlist", select:"category name price rating description"});
+        if (!user) return next(new ErrorHandler("user not found", 404));
+
+        res.status(200).json({success:true, message:user.wishlist})
+
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
 export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {verificationToken, emailType}:{verificationToken:string; emailType:string;} = req.body;
