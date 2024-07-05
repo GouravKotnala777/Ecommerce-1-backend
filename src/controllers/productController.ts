@@ -135,3 +135,15 @@ export const updateProduct = async(req:Request, res:Response, next:NextFunction)
         next(error);
     }
 };
+export const findOutStockProducts = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const fewLeft = await Product.find({stock:{$lt:4}}).sort({stock:"asc"});
+
+        if (fewLeft.length === 0) return(next(new ErrorHandler("No product found", 404)));
+
+        res.status(200).json({success:true, message:fewLeft})        
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
