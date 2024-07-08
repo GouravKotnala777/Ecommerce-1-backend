@@ -28,6 +28,9 @@ const cartSchema = new mongoose.Schema<CartTypes>({
         type:Number,
         default:0
     }
+},
+{
+    timestamps:true
 });
 
 const cartModel:Model<CartTypes> = mongoose.models.Cart || mongoose.model<CartTypes>("Cart", cartSchema);
