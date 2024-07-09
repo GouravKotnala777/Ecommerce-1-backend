@@ -14,9 +14,10 @@ export class ErrorHandler extends Error {
         // Error.captureStackTrace(this, this.constructor);
     }
 };
-export const sendToken = async(model:(mongoose.Document<unknown, {}, UserTypes> & UserTypes & Required<{
-    _id: mongoose.Schema.Types.ObjectId;
-}>) | null, res:Response, next:NextFunction) => {
+export const sendToken = async(
+    model:(mongoose.Document<unknown, {}, UserTypes> & UserTypes & Required<{_id: mongoose.Schema.Types.ObjectId;}>) | null,
+    res:Response,
+    next:NextFunction) => {
     try {
         const token = await model?.generateToken(model?._id);
 
@@ -24,6 +25,23 @@ export const sendToken = async(model:(mongoose.Document<unknown, {}, UserTypes> 
     } catch (error) {
         console.log(error);
         next(error);
+    }
+}
+export const generateCoupon = () => {
+    try {
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        let code = "";
+
+        for (let item = 0; item < 20; item++) {
+            const randomIndex = Math.floor(Math.random()*characters.length)
+            const element = characters[randomIndex];
+            code = code+element;
+        }
+        
+        return code;
+    } catch (error) {
+        console.log(error);
+        return "";        
     }
 }
 
