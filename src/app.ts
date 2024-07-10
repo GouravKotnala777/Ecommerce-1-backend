@@ -11,8 +11,14 @@ import cartRouter from "./routers/cartRouter";
 import reviewRouter from "./routers/reviewRouter";
 import { v2 as cloudinary } from "cloudinary";
 import couponRouter from "./routers/couponRouter";
+import paymentRouter from "./routers/paymentRouter";
+import Stripe from "stripe";
 
 config({path:"./.env"});
+
+const PORT = process.env.PORT || 8000;
+const DATABASE_URI = process.env.DATABASE_URI || "";
+const STRIPE_KEY = process.env.STRIPE_KEY || "";
 
 const app = express();
 
@@ -32,13 +38,16 @@ cloudinary.config({
     api_secret:process.env.CLOUDINARY_API_SECRET as string
   });
 
-connectDatabase(process.env.DATABASE_URI as string);
+connectDatabase(DATABASE_URI);
+
+export const stripe = new Stripe(STRIPE_KEY);
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/product", productRouter);
 app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/review", reviewRouter);
 app.use("/api/v1/coupon", couponRouter);
+app.use("/api/v1/payment", paymentRouter);
 
 app.get("/test", (req, res, next) => {
     return res.status(200).json({success:true, message:`server is running at port no ${process.env.PORT}`})
@@ -46,6 +55,6 @@ app.get("/test", (req, res, next) => {
 
 app.use(errorMiddleware);
 
-app.listen(process.env.PORT, () => {
+app.listen(PORT, () => {
     console.log("Listening....");
 })
