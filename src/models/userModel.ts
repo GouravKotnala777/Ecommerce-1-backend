@@ -3,6 +3,8 @@ import bcryptJS from "bcryptjs";
 import jsonwebtoken from "jsonwebtoken";
 
 interface AddressTypes {
+    userID:mongoose.Schema.Types.ObjectId,
+    house:string;
     street: string;
     city: string;
     state: string;
@@ -13,7 +15,7 @@ export interface UserTypes extends Document{
     name: string;
     email: string;
     password: string;
-    address: AddressTypes;
+    address: AddressTypes[];
     mobile: string;
     role: string;
     orderHistory: mongoose.Schema.Types.ObjectId[];
@@ -48,12 +50,13 @@ const userSchema = new mongoose.Schema<UserTypes>({
         type:String,
         required:true
     },
-    address:{
+    address:[{
+        house: String,
         street: String,
         city: String,
         state: String,
         zip: String
-    },
+    }],
     mobile: {
         type:String,
         required:true
