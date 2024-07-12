@@ -3,7 +3,6 @@ import bcryptJS from "bcryptjs";
 import jsonwebtoken from "jsonwebtoken";
 
 interface AddressTypes {
-    userID:mongoose.Schema.Types.ObjectId,
     house:string;
     street: string;
     city: string;
