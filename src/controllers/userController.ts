@@ -76,19 +76,34 @@ export const me  = async(req:Request, res:Response, next:NextFunction) => {
 };
 export const updateMe  = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {name, email, password, mobile} = req.body;
+        const {name, email, password, mobile, house, street, city, state, zip} = req.body;
         const user = (req as AuthenticatedUserRequest).user;
 
         if (!user) return next(new ErrorHandler("user not found", 404));
 
-        const updateMe = await User.findByIdAndUpdate(user._id, {
-            ...(name&&{name}),
-            ...(email&&{email}),
-            ...(password&&{password}),
-            ...(mobile&&{mobile})
-        });
+        const isAddressExist = user.address.find((item) => item.house === house && item.street === street && item.city === city && item.state === state && item.zip === zip);
 
-        if (!updateMe) return next(new ErrorHandler("Internal Server Error", 500));
+        if (isAddressExist) {
+            const updateMe = await User.findByIdAndUpdate(user._id, {
+                ...(name&&{name}),
+                ...(email&&{email}),
+                ...(password&&{password}),
+                ...(mobile&&{mobile})
+            });
+            
+            if (!updateMe) return next(new ErrorHandler("Internal Server Error", 500));
+        }
+        else{
+            const updateMe = await User.findByIdAndUpdate(user._id, {
+                ...(name&&{name}),
+                ...(email&&{email}),
+                ...(password&&{password}),
+                ...(mobile&&{mobile}),
+                ...(street&&city&&state&&zip&&{$push:{address:{house, street, city, state, zip}}})
+            });
+
+            if (!updateMe) return next(new ErrorHandler("Internal Server Error", 500));
+        }
 
         res.status(200).json({success:true, message:updateMe});
     } catch (error) {
