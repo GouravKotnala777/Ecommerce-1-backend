@@ -111,6 +111,28 @@ export const updateMe  = async(req:Request, res:Response, next:NextFunction) => 
         next(error);        
     }
 };
+export const removeAddress  = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {house, street, city, state, zip} = req.body;
+        const userID = (req as AuthenticatedUserRequest).user;
+
+        console.log({house, street, city, state, zip});
+        
+        if (!house && !street && !city && !state && !zip) return next(new ErrorHandler("Body for remove address is empty", 404));
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
+        
+        const user = await User.findByIdAndUpdate(userID, {$pull:{
+            address:{house, street, city, state, zip}
+        }});
+        
+        if (!user) return next(new ErrorHandler("user not found", 404));
+
+        res.status(200).json({success:true, message:"Address removed"});
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
 export const logout  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const user = (req as AuthenticatedUserRequest).user;
