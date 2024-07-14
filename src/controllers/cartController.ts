@@ -7,11 +7,9 @@ import mongoose from "mongoose";
 
 export const addToCart = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {productID, quantity}:{productID:string; quantity:number;} = req.body;
+        const {productID, price, quantity}:{productID:string; price:number; quantity:number;} = req.body;
         
-        console.log({productID, quantity});    
-
-        if (!productID || !quantity) return next(new ErrorHandler("All fields are requried", 400));
+        if (!productID || !quantity || !price) return next(new ErrorHandler("All fields are requried", 400));
         
         const isCartExist = await Cart.findOne({userID:(req as AuthenticatedUserRequest).user._id});
 
@@ -29,6 +27,7 @@ export const addToCart = async(req:Request, res:Response, next:NextFunction) => 
                 console.log("************");
 
                 isCartExist.products.push({productID:new mongoose.Types.ObjectId(productID), quantity});
+                isCartExist.totalPrice = isCartExist.totalPrice+(price*quantity);
                 await isCartExist.save();
             }
             else{
@@ -45,6 +44,8 @@ export const addToCart = async(req:Request, res:Response, next:NextFunction) => 
                     }
                     
                 });
+                isCartExist.totalPrice = isCartExist.totalPrice+(price*quantity);
+
                 await isCartExist.save();
             }
         }
@@ -59,7 +60,7 @@ export const addToCart = async(req:Request, res:Response, next:NextFunction) => 
                     productID,
                     quantity
                 },
-                totalPrice:696969
+                totalPrice:(price*quantity)
             });
     
             if (!cart) return next(new ErrorHandler("Internal Server Error", 500));
@@ -75,7 +76,7 @@ export const addToCart = async(req:Request, res:Response, next:NextFunction) => 
 };
 export const removeFromCart = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {productID, quantity}:{productID:string; quantity:number;} = req.body;
+        const {productID, price, quantity}:{productID:string; price:number; quantity:number;} = req.body;
 
         const isCartExist = await Cart.findOne({userID:(req as AuthenticatedUserRequest).user._id});
 
@@ -94,12 +95,14 @@ export const removeFromCart = async(req:Request, res:Response, next:NextFunction
                     return q;
                 }
             });
+            isCartExist.totalPrice = isCartExist.totalPrice - (price*quantity);
             await isCartExist.save();
         }
         else if(isProductExistInCart.quantity === quantity) {
             const filteredProductsArray = isCartExist.products.filter((product) => product.productID.toString() !== productID);
 
             isCartExist.products = filteredProductsArray;
+            isCartExist.totalPrice = isCartExist.totalPrice - (price*quantity);
 
             await isCartExist.save();
         }
@@ -134,6 +137,8 @@ export const myCart = async(req:Request, res:Response, next:NextFunction) => {
         const cart = await Cart.findOne({userID}).populate({model:"Product", path:"products.productID", select:"category name price rating description"});
 
         if (!cart) return (next(new ErrorHandler("Cart not found", 404)));
+        
+        console.log("%%%%%%%%%%%%%%%");
         
         res.status(200).json({success:true, message:cart});
     } catch (error) {
