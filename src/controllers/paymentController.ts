@@ -5,12 +5,12 @@ import { stripe } from "../app";
 
 export const createPayment = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {amount} = req.body;
+        const {amount, quantity} = req.body;
 
-        if (!amount) return (next(new ErrorHandler("Invalid amount", 400)))
+        if (!amount || !quantity) return (next(new ErrorHandler("Invalid amount or quantity", 400)))
         
         const paymentIntent = await stripe.paymentIntents.create({
-            amount:amount*100,
+            amount:amount*100*quantity,
             currency:"inr"
         });
 
