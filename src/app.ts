@@ -13,6 +13,7 @@ import { v2 as cloudinary } from "cloudinary";
 import couponRouter from "./routers/couponRouter";
 import paymentRouter from "./routers/paymentRouter";
 import Stripe from "stripe";
+import orderRouter from "./routers/orderRouter";
 
 config({path:"./.env"});
 
@@ -48,6 +49,7 @@ app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/review", reviewRouter);
 app.use("/api/v1/coupon", couponRouter);
 app.use("/api/v1/payment", paymentRouter);
+app.use("/api/v1/order", orderRouter);
 
 app.get("/test", (req, res, next) => {
     return res.status(200).json({success:true, message:`server is running at port no ${process.env.PORT}`})
