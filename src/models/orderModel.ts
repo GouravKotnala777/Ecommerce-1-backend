@@ -13,6 +13,7 @@ export interface OrderTypes {
         shippingType:string;
         message:string;
     },
+    coupon:mongoose.Schema.Types.ObjectId|undefined;
     totalPrice: number;
     createdAt: Date;
     updatedAt: Date;
@@ -39,7 +40,6 @@ const orderSchema = new mongoose.Schema<OrderTypes>({
         transactionId:String,
         status:{
             type:String,
-            enum:["pending", "dispatch", "delivered"],
             default:"pending"
         },
         shippingType:{
@@ -48,6 +48,10 @@ const orderSchema = new mongoose.Schema<OrderTypes>({
             default:"regular"
         },
         message:String
+    },
+    coupon:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Coupon"
     },
     totalPrice:{
         type:Number,
