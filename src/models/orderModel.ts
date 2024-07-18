@@ -44,7 +44,7 @@ const orderSchema = new mongoose.Schema<OrderTypes>({
         },
         shippingType:{
             type:String,
-            enum:["instant", "standard", "regular"],
+            enum:["express", "standard", "regular"],
             default:"regular"
         },
         message:String
