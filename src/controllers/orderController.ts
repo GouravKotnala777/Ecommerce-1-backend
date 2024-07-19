@@ -4,17 +4,35 @@ import { AuthenticatedUserRequest } from "../middlewares/auth";
 import { ErrorHandler } from "../utils/utilities";
 import Cart from "../models/cartModel";
 import mongoose, { ObjectId } from "mongoose";
+import Coupon from "../models/couponModel";
 
 
 export const newOrder = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const userID = (req as AuthenticatedUserRequest).user._id;
         const {orderItems, totalPrice, coupon, transactionId, status, shippingType, message, parent}:{orderItems:{productID:string; quantity:number}[], totalPrice:number; coupon:string; transactionId:string; status:string; shippingType:string; message:string; parent:string;} = req.body;
+        const now = new Date();
+
+        console.log({orderItems, totalPrice, coupon, transactionId, status, shippingType, message, parent});
+        
 
         if (!userID) return(next(new ErrorHandler("userID not found", 404)));
         if (!totalPrice || !transactionId || !status || !shippingType) return(next(new ErrorHandler("something not found from orderController.ts", 404)));
         if (orderItems.length === 0) return(next(new ErrorHandler("productID not found", 404)));
         
+
+
+        const usedCoupon = await Coupon.findById(coupon);
+
+        if (usedCoupon) {
+            if (now < usedCoupon.startedDate || now > usedCoupon.endDate) return next(new ErrorHandler("Coupon expired", 402));
+            if (usedCoupon.usedCount >= usedCoupon.usageLimit) return next(new ErrorHandler("Coupon already used", 402));
+            usedCoupon.usageLimit = usedCoupon.usageLimit - 1;
+            usedCoupon.usedCount = usedCoupon.usedCount + 1;
+        }
+
+        await usedCoupon?.save();
+
         const order = await Order.create({
             userID,
             orderItems,
