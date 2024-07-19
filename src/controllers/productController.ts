@@ -147,3 +147,28 @@ export const findOutStockProducts = async(req:Request, res:Response, next:NextFu
         next(error);        
     }
 };
+export const getProductsOfSame = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {query, value} = req.params;
+
+        console.log({paramsQuery:query});
+        console.log(value);
+        
+        const products = await Product.find({
+            [query]:query === "rating"?
+                        Number(value)
+                        :
+                        {
+                            $regex:value,
+                            $options:"i"
+                        }
+        });
+
+        if (products.length === 0) return next(new ErrorHandler("Products not found", 404));
+
+        res.status(200).json({success:true, message:products});
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
