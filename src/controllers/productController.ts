@@ -10,6 +10,11 @@ interface CreateProductBodyTypes {
     price:number;
     category:string;
     stock:number;
+
+    sub_category:string; sub_category_type:string; item_form:string;
+    total_servings:number; diet_type:string; flavour:string; age_range:number; about:string; ingredient:string;
+
+
     images:string;
     rating?:number;
     sku:string;
@@ -19,20 +24,33 @@ interface CreateProductBodyTypes {
     width?:number;
     depth?:number;
     weight?:number;
-    tags:string[];
+    tags:string;
 }
 
 export const createProduct = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {name, description, price, category, stock, images, rating, sku, discount, brand, height, width, depth, weight, tags}:CreateProductBodyTypes = req.body;
+        const {name, description, price, category, stock, 
+            sub_category, sub_category_type, item_form,
+            images, rating, sku, discount, brand, height, width, depth, weight, tags}:CreateProductBodyTypes = req.body;
 
-        if (!name || !description || !price || !category || !stock || !brand) return next(new ErrorHandler("All fields are requried", 400));
+
+        console.log({name, description, price, category, stock, 
+            sub_category, sub_category_type, item_form,
+            images, rating, sku, discount, brand, height, width, depth, weight, tags});
+        
+
+
+
+
+        if (!name || !description || !price || !category || !stock || !sub_category || !brand) return next(new ErrorHandler("All fields are requried", 400));
         
         const photo:UploadApiResponse|null = await uploadOnCloudinary(req.file?.path as string, "Ecommerce1/products");
 
         if (!photo?.secure_url) return next(new ErrorHandler("secure_url not found", 404));
 
-        const product = await Product.create({name, description, price, category, stock, images:photo?.secure_url, rating, sku, discount, brand, height, width, depth, weight, tags});
+        const product = await Product.create({name, description, price, category, stock,
+            sub_category, sub_category_type, item_form,
+            images:photo?.secure_url, rating, sku, discount, brand, height, width, depth, weight, tags:tags.split(",").map((item) => item.trim())});
 
         if (!product) return next(new ErrorHandler("Internal Server Error", 500));            
 
@@ -95,6 +113,14 @@ export const updateProduct = async(req:Request, res:Response, next:NextFunction)
             price,
             category,
             stock,
+
+
+            total_servings, diet_type, flavour, age_range, about, ingredient,
+
+        
+
+
+
             images,
             rating,
             sku,
@@ -107,6 +133,9 @@ export const updateProduct = async(req:Request, res:Response, next:NextFunction)
             tags
         }:CreateProductBodyTypes = req.body;
 
+        console.log({total_servings, diet_type, flavour, age_range, about, ingredient});
+        
+
         if (!productID) return (next(new ErrorHandler("productID not found", 404)));
         
         const product = await Product.findByIdAndUpdate(productID, {
@@ -115,6 +144,16 @@ export const updateProduct = async(req:Request, res:Response, next:NextFunction)
             ...(price&&{price}),
             ...(category&&{category}),
             ...(stock&&{stock}),
+
+
+            ...(total_servings&&{total_servings}),
+            ...(diet_type&&{diet_type}),
+            ...(flavour&&{flavour}),
+            ...(age_range&&{age_range}),
+            ...(about&&{about:about.split(",").map((item) => item.trim())}),
+            ...(ingredient&&{ingredient}),
+
+
             ...(images&&{images}),
             ...(rating&&{rating}),
             ...(sku&&{sku}),
@@ -145,6 +184,23 @@ export const findOutStockProducts = async(req:Request, res:Response, next:NextFu
     } catch (error) {
         console.log(error);
         next(error);        
+    }
+};
+export const findIncompleteProducts = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const incompleteProducts = await Product.find({
+            $or:[
+                {total_servings:0},
+                {about:[]}
+            ]
+        });
+
+        if (incompleteProducts.length === 0) return(next(new ErrorHandler("No product found", 404)));
+
+        res.status(200).json({success:true, message:incompleteProducts});
+    } catch (error) {
+        console.log(error);
+        next(error);
     }
 };
 export const getProductsOfSame = async(req:Request, res:Response, next:NextFunction) => {
