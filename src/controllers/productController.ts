@@ -203,6 +203,25 @@ export const findIncompleteProducts = async(req:Request, res:Response, next:Next
         next(error);
     }
 };
+export const findAllCategories = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {groupedBy} = req.params;
+
+        console.log({groupedBy});
+        
+
+        if (!groupedBy) return next(new ErrorHandler("groupedBy not found", 404));
+        
+        const allCategories = await Product.find().distinct(groupedBy);
+
+        if (allCategories.length === 0) return next(new ErrorHandler("No categories found", 404));
+
+        res.json({success:true, message:allCategories});
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
 export const getProductsOfSame = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {query, value} = req.params;

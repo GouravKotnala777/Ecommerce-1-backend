@@ -1,6 +1,6 @@
 import express from "express";
 import { isUserAdmin, isUserAuthenticated } from "../middlewares/auth";
-import { allProducts, createProduct, deleteProduct, findIncompleteProducts, findOutStockProducts, getProductsOfSame, singleProducts, updateProduct } from "../controllers/productController";
+import { allProducts, createProduct, deleteProduct, findAllCategories, findIncompleteProducts, findOutStockProducts, getProductsOfSame, singleProducts, updateProduct } from "../controllers/productController";
 import upload from "../middlewares/multer.middleware";
 
 const productRouter = express.Router();
@@ -15,6 +15,8 @@ productRouter.route("/:productID").get(singleProducts)
                                 .delete(isUserAuthenticated, isUserAdmin, deleteProduct)
                                 .put(isUserAuthenticated, isUserAdmin, updateProduct);
 productRouter.route("/same/:query/:value").get(getProductsOfSame);
+productRouter.route("/groupedBy/:groupedBy").get(findAllCategories);
+
 
 
 
