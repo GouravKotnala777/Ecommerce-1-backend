@@ -180,7 +180,7 @@ export const myWishlist  = async(req:Request, res:Response, next:NextFunction) =
     try {
         const userID = (req as AuthenticatedUserRequest).user._id;
         if (!userID) return next(new ErrorHandler("userID not found", 404));
-        const user = await User.findById(userID).populate({model:"Product", path:"wishlist", select:"category name price rating description"});
+        const user = await User.findById(userID).populate({model:"Product", path:"wishlist", select:"category name price rating description images"});
         if (!user) return next(new ErrorHandler("user not found", 404));
 
         res.status(200).json({success:true, message:user.wishlist})
