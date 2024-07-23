@@ -74,6 +74,8 @@ export const allProducts = async(req:Request, res:Response, next:NextFunction) =
 };
 export const singleProducts = async(req:Request, res:Response, next:NextFunction) => {
     try {
+        console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        
         const {productID} = req.params;
 
         if (!productID) return (next(new ErrorHandler("productID not found", 404)));
@@ -205,10 +207,9 @@ export const findIncompleteProducts = async(req:Request, res:Response, next:Next
 };
 export const findAllCategories = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {groupedBy} = req.params;
-
-        console.log({groupedBy});
+        console.log("cccccccccccccccccccccccccccccccccccccccccc");
         
+        const {groupedBy} = req.params;
 
         if (!groupedBy) return next(new ErrorHandler("groupedBy not found", 404));
         
@@ -225,9 +226,6 @@ export const findAllCategories = async(req:Request, res:Response, next:NextFunct
 export const getProductsOfSame = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {query, value} = req.params;
-
-        console.log({paramsQuery:query});
-        console.log(value);
         
         const products = await Product.find({
             [query]:query === "rating"?
@@ -245,5 +243,29 @@ export const getProductsOfSame = async(req:Request, res:Response, next:NextFunct
     } catch (error) {
         console.log(error);
         next(error);        
+    }
+};
+export const searchProductByQuery = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {searchQry} = req.params;
+        console.log("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+        
+
+        const products = await Product.find({
+            $or:[
+                {name:searchQry},
+                {category:searchQry},
+                {bran:searchQry},
+                {tags:{$in:[searchQry]}}
+            ]
+        });
+
+        if (!products) return next(new ErrorHandler("Searched Products not found", 404));
+
+        res.status(200).json({success:true, message:products});
+    } catch (error) {
+        console.log(error);
+        next(error);
+        
     }
 };
