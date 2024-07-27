@@ -62,11 +62,14 @@ export const createProduct = async(req:Request, res:Response, next:NextFunction)
 };
 export const allProducts = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const products = await Product.find();
+        const {skip} = req.query;
+        
+        const totalProducts = await Product.countDocuments();
+        const products = await Product.find().limit(5).skip(skip?Number(skip)*5:0);
 
         if (products.length === 0) return (next(new ErrorHandler("No product exits", 400)));
         
-        res.status(200).json({success:true, message:products});
+        res.status(200).json({success:true, message:products, totalProducts});
     } catch (error) {
         console.log(error);
         next(error);
@@ -206,9 +209,7 @@ export const findIncompleteProducts = async(req:Request, res:Response, next:Next
     }
 };
 export const findAllCategories = async(req:Request, res:Response, next:NextFunction) => {
-    try {
-        console.log("cccccccccccccccccccccccccccccccccccccccccc");
-        
+    try {        
         const {groupedBy} = req.params;
 
         if (!groupedBy) return next(new ErrorHandler("groupedBy not found", 404));
