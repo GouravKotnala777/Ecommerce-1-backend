@@ -249,14 +249,22 @@ export const getProductsOfSame = async(req:Request, res:Response, next:NextFunct
 export const searchProductByQuery = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {searchQry} = req.params;
-        console.log("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
         
 
         const products = await Product.find({
             $or:[
-                {name:searchQry},
-                {category:searchQry},
-                {bran:searchQry},
+                {name:{
+                    $regex:searchQry,
+                    $options:"i"
+                }},
+                {category:{
+                    $regex:searchQry,
+                    $options:"i"
+                }},
+                {brand:{
+                    $regex:searchQry,
+                    $options:"i"
+                }},
                 {tags:{$in:[searchQry]}}
             ]
         });
