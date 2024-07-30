@@ -13,7 +13,8 @@ productRouter.route("/outstock").get(isUserAuthenticated, isUserAdmin, findOutSt
 productRouter.route("/incomplete").get(isUserAuthenticated, isUserAdmin, findIncompleteProducts);
 productRouter.route("/same/:query/:value").get(getProductsOfSame);
 productRouter.route("/groupedBy/:groupedBy").get(findAllCategories);
-productRouter.route("/search/:searchQry").get(searchProductByQuery);
+//productRouter.route("/search/:searchQry").get(searchProductByQuery);
+productRouter.route("/search/:searchQry").post(searchProductByQuery);
 productRouter.route("/:productID").get(singleProducts)
                                 .delete(isUserAuthenticated, isUserAdmin, deleteProduct)
                                 .put(isUserAuthenticated, isUserAdmin, updateProduct);

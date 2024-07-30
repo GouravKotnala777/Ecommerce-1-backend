@@ -246,28 +246,51 @@ export const getProductsOfSame = async(req:Request, res:Response, next:NextFunct
         next(error);        
     }
 };
-export const searchProductByQuery = async(req:Request, res:Response, next:NextFunction) => {
+export const searchProductByQuery = async(req:Request<{searchQry:string;}, {}, {category?:string; sub_category?:string; brand?:string; price?:{minPrice:number; maxPrice:number;}}>, res:Response, next:NextFunction) => {
     try {
         const {searchQry} = req.params;
+        const {category, sub_category, brand, price} = req.body;
+        
+        console.log({searchQry});
+        console.log({category, sub_category, brand});
+        console.log({price});
+
+        category || sub_category || brand || price?.maxPrice ?
+            console.log("Upper Wala")
+            :
+            console.log("Niche Wala")
+            
         
 
-        const products = await Product.find({
-            $or:[
-                {name:{
-                    $regex:searchQry,
-                    $options:"i"
-                }},
-                {category:{
-                    $regex:searchQry,
-                    $options:"i"
-                }},
-                {brand:{
-                    $regex:searchQry,
-                    $options:"i"
-                }},
-                {tags:{$in:[searchQry]}}
-            ]
-        });
+        const products = await Product.find(
+
+            category || sub_category || brand ?
+            {
+                ...(category&&{category:{$regex:category, $options:"i"}}),
+                ...(sub_category&&{sub_category:{$regex:sub_category, $options:"i"}}),
+                ...(brand&&{brand:{$regex:brand, $options:"i"}}),
+                ...(price&&{price:{$gt:price.minPrice, $lt:price.maxPrice}})
+            }
+            :
+            {
+                $or:[
+                    {name:{
+                        $regex:searchQry,
+                        $options:"i"
+                    }},
+                    {category:{
+                        $regex:searchQry,
+                        $options:"i"
+                    }},
+                    {brand:{
+                        $regex:searchQry,
+                        $options:"i"
+                    }},
+                    {tags:{$in:[searchQry]}}
+                ],
+                ...(price&&{price:{$gt:price.minPrice, $lt:price.maxPrice}})
+            }
+        );
 
         if (!products) return next(new ErrorHandler("Searched Products not found", 404));
 
