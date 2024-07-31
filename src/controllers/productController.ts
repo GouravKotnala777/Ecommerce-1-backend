@@ -248,12 +248,17 @@ export const getProductsOfSame = async(req:Request, res:Response, next:NextFunct
 };
 export const searchProductByQuery = async(req:Request<{searchQry:string;}, {}, {category?:string; sub_category?:string; brand?:string; price?:{minPrice:number; maxPrice:number;}}>, res:Response, next:NextFunction) => {
     try {
+        const {skip} = req.query;
         const {searchQry} = req.params;
         const {category, sub_category, brand, price} = req.body;
+
         
-        console.log({searchQry});
-        console.log({category, sub_category, brand});
-        console.log({price});
+        console.log({searchQry, skip:Number(skip), category, sub_category, brand});
+        
+        skip?
+            console.log(`skip hai ${Number(skip)*5}`)
+            :
+            console.log(`skip nahi hai ${Number(skip)*5}`)
 
         category || sub_category || brand || price?.maxPrice ?
             console.log("Upper Wala")
@@ -290,11 +295,15 @@ export const searchProductByQuery = async(req:Request<{searchQry:string;}, {}, {
                 ],
                 ...(price&&{price:{$gt:price.minPrice, $lt:price.maxPrice}})
             }
-        );
+        ).limit(5).skip(skip?Number(skip)*5:0);
 
         if (!products) return next(new ErrorHandler("Searched Products not found", 404));
 
-        res.status(200).json({success:true, message:products});
+
+        const totalProducts = products.length;
+
+
+        res.status(200).json({success:true, message:products, totalProducts});
     } catch (error) {
         console.log(error);
         next(error);
