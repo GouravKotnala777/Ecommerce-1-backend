@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../models/userModel";
-import {ErrorHandler, sendToken} from "../utils/utilities";
+import {cookieOptions, ErrorHandler, sendToken} from "../utils/utilities";
 import { AuthenticatedUserRequest } from "../middlewares/auth";
 import mongoose from "mongoose";
 import { VERIFY } from "../constants/constants";
@@ -139,7 +139,7 @@ export const logout  = async(req:Request, res:Response, next:NextFunction) => {
 
         if (!user) return next(new ErrorHandler("user not found", 404));
 
-        res.cookie("userToken", "");
+        res.cookie("userToken", "", cookieOptions);
         res.status(200).json({success:true, message:"Logout successfull"});
     } catch (error) {
         console.log(error);
