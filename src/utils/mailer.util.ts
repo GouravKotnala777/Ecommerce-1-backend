@@ -90,17 +90,17 @@ const sendMail = async(email:string, emailType:string, userID:mongoose.Schema.Ty
                         <h3 class="subject">Subject: ${emailType === "VERIFY" ? "Please Verify Your Email Address" : "Please Verify Your Email To Change Password"}</h3>
                         <div class="receiver">Dear ${user?.name},</div>
                         <div class="mail_para">
-                            ${emailType === "VERIFY"||emailType === "REGISTER" ? "Thank you for registering with Amazaun! To ensure the security of your account and access all features, please verify your email address by clicking the link below:" : "To change your password first We need to verify it's you"}
+                            ${emailType === "VERIFY"||emailType === "REGISTER" ? "Thank you for registering with Ecommerce! To ensure the security of your account and access all features, please verify your email address by clicking the link below:" : "To change your password first We need to verify it's you"}
                         </div>
                         <div class="verify_link_cont">
-                            <a class="verify_btn" href="${process.env.SERVER_URI}/verifyemail?token=${hashedToken}&?emailtype=${emailType}">Verify</a>
+                            <a class="verify_btn" href="${process.env.CLIENT_URL}/user/verifyemail?token=${hashedToken}&emailtype=${emailType}">Verify</a>
                         </div>
-                        <div class="verify_uri">URL :- ${process.env.SERVER_URI}/verifyemail?token=${hashedToken}&?emailtype=${emailType}</div>
+                        <div class="verify_uri">URL :- ${process.env.CLIENT_URL}/user/verifyemail?token=${hashedToken}&emailtype=${emailType}</div>
                         <div class="mail_para">If you are unable to click the link above, please copy and paste it into your browser's address bar.</div>
                         <div class="mail_para">Once your email address is verified, you'll be able to [describe any benefits or features unlocked after verification].</div>
-                        <div class="mail_para">If you did not create an account with Amazaun, please ignore this email.</div>
+                        <div class="mail_para">If you did not create an account with Ecommerce, please ignore this email.</div>
                         <div class="mail_para">Thank you,</div>
-                        <div class="mail_para">The Amazaun Team</div>
+                        <div class="mail_para">The Ecommerce Team</div>
                     </div>
                 </body>
             </html>
