@@ -11,11 +11,9 @@ export const register = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {name, email, password, avatar, mobile}:{name:string; email:string; password:string; avatar:string; mobile:string;} = req.body;
 
-        console.log({name, email, password, avatar, mobile});
 
         const isUserExist = await User.findOne({email});
         
-        console.log({isUserExist});
 
         if (isUserExist) return next(new ErrorHandler("User already exists", 401));
 
@@ -25,6 +23,7 @@ export const register = async(req:Request, res:Response, next:NextFunction) => {
 
         if (!newUser) return next(new ErrorHandler("Internal Server Error", 500));
 
+        await sendMail(newUser.email, VERIFY, newUser._id, next);
         await sendToken(newUser, res, next);
         
         res.status(200).json({success:true, message:"Registration successfull"});
@@ -41,10 +40,6 @@ export const login  = async(req:Request, res:Response, next:NextFunction) => {
         if (!isUserExist) return (next(new ErrorHandler("Wrong email or password 1", 404)));
 
         const isPasswordMatched = await isUserExist.comparePassword(password);
-
-
-        console.log({isPasswordMatched});
-        
 
         if (!isPasswordMatched) return (next(new ErrorHandler("Wrong email or password 2", 404)));
 
@@ -193,10 +188,8 @@ export const myWishlist  = async(req:Request, res:Response, next:NextFunction) =
 export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {verificationToken, emailType}:{verificationToken:string; emailType:string;} = req.body;
-
-        console.log({verificationToken, emailType});
         
-        if (emailType === VERIFY) {
+        if (emailType === "VERIFY") {
             const user = await User.findOne({verificationToken, verificationTokenExpires:{$gt:Date.now()}});
     
             if (!user) return next(new ErrorHandler("User not found", 404));
