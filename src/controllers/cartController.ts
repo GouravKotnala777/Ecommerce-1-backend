@@ -136,9 +136,7 @@ export const myCart = async(req:Request, res:Response, next:NextFunction) => {
         
         const cart = await Cart.findOne({userID}).populate({model:"Product", path:"products.productID", select:"category name price rating description images"});
 
-        if (!cart) return (next(new ErrorHandler("Cart not found", 404)));
-        
-        console.log("%%%%%%%%%%%%%%%");
+        if (!cart) return (next(new ErrorHandler("Cart is empty", 204)));
         
         res.status(200).json({success:true, message:cart});
     } catch (error) {
