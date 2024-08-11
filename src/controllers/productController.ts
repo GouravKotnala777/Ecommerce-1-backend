@@ -246,14 +246,14 @@ export const getProductsOfSame = async(req:Request, res:Response, next:NextFunct
         next(error);        
     }
 };
-export const searchProductByQuery = async(req:Request<{searchQry:string;}, {}, {category?:string; sub_category?:string; brand?:string; price?:{minPrice:number; maxPrice:number;}}>, res:Response, next:NextFunction) => {
+export const searchProductByQuery = async(req:Request<{searchQry:string;}, {}, {category?:string; sub_category?:string; brand?:string; price?:{minPrice:number; maxPrice:number;}; limit:number;}>, res:Response, next:NextFunction) => {
     try {
         const {skip} = req.query;
         const {searchQry} = req.params;
-        const {category, sub_category, brand, price} = req.body;
+        const {category, sub_category, brand, price, limit} = req.body;
 
         
-        console.log({searchQry, skip:Number(skip), category, sub_category, brand});
+        console.log({searchQry, skip:Number(skip), category, sub_category, brand, limit});
         
         skip?
             console.log(`skip hai ${Number(skip)*5}`)
@@ -295,7 +295,7 @@ export const searchProductByQuery = async(req:Request<{searchQry:string;}, {}, {
                 ],
                 ...(price&&{price:{$gt:price.minPrice, $lt:price.maxPrice}})
             }
-        ).limit(5).skip(skip?Number(skip)*5:0);
+        ).limit(Number(limit)).skip(skip?Number(skip)*5:0);
 
         if (!products) return next(new ErrorHandler("Searched Products not found", 404));
 
