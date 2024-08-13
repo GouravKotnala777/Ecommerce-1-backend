@@ -26,7 +26,7 @@ export const register = async(req:Request, res:Response, next:NextFunction) => {
         await sendMail(newUser.email, VERIFY, newUser._id, next);
         await sendToken(newUser, res, next);
         
-        res.status(200).json({success:true, message:"Registration successfull"});
+        res.status(200).json({success:true, message:"Now verify your email"});
     } catch (error) {
         console.log(error);
         next(error);
