@@ -3,7 +3,7 @@ import User from "../models/userModel";
 import {cookieOptions, ErrorHandler, sendToken} from "../utils/utilities";
 import { AuthenticatedUserRequest } from "../middlewares/auth";
 import mongoose from "mongoose";
-import { VERIFY } from "../constants/constants";
+import { RESET_PASSWORD, VERIFY } from "../constants/constants";
 import sendMail from "../utils/mailer.util";
 
 
@@ -106,6 +106,26 @@ export const updateMe  = async(req:Request, res:Response, next:NextFunction) => 
         next(error);        
     }
 };
+export const forgetPassword  = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {email} = req.body;
+        console.log({email});
+        
+        if (!email) return next(new ErrorHandler("Please provide email", 401));
+
+        const user = await User.findOne({email, emailVerified:true});
+
+        if (!user) return next(new ErrorHandler("User not found", 404));
+
+        const aa = sendMail(user.email, RESET_PASSWORD, user._id, next);
+        console.log({aa});
+
+        res.status(200).json({success:true, message:`A verification message has sent to this email ${email}`})
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
 export const removeAddress  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {house, street, city, state, zip} = req.body;
@@ -187,9 +207,9 @@ export const myWishlist  = async(req:Request, res:Response, next:NextFunction) =
 };
 export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {verificationToken, emailType}:{verificationToken:string; emailType:string;} = req.body;
+        const {verificationToken, emailType, newPassword}:{verificationToken:string; emailType:string; newPassword:string;} = req.body;
         
-        if (emailType === "VERIFY") {
+        if (emailType === VERIFY) {
             const user = await User.findOne({verificationToken, verificationTokenExpires:{$gt:Date.now()}});
     
             if (!user) return next(new ErrorHandler("User not found", 404));
@@ -204,6 +224,22 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
             await sendToken(user, res, next);
 
             return res.status(200).json({success:true, message:"Email verified successfully"});
+        }
+        else if (emailType === RESET_PASSWORD) {
+            const user = await User.findOne({resetPasswordToken:verificationToken, resetPasswordExpires:{$gt:Date.now()}});
+
+            if (!user) return next(new ErrorHandler("User not found", 404));
+            if (user.resetPasswordToken === undefined) return next(new ErrorHandler("resetPasswordToken not found", 404));
+            
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpires = undefined;
+            user.password = newPassword;
+
+            await user.save();
+
+            await sendToken(user, res, next);
+
+            return res.status(200).json({success:true, message:"Password updated successfully"});
         }
     } catch (error) {
         console.log(error);

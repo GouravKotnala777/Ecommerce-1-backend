@@ -4,7 +4,7 @@ import bcryptjs from "bcryptjs";
 import nodemailer from "nodemailer";
 import { ErrorHandler } from "./utilities";
 import User from "../models/userModel";
-import { VERIFY } from "../constants/constants";
+import { RESET_PASSWORD, VERIFY } from "../constants/constants";
 import mongoose from "mongoose";
 
 
@@ -19,7 +19,14 @@ const sendMail = async(email:string, emailType:string, userID:mongoose.Schema.Ty
                 verificationToken:hashedToken,
                 verificationTokenExpires:Date.now() + 90000
             });
-            if (!user) return next(new ErrorHandler("Internal Server Error", 500))
+            if (!user) return next(new ErrorHandler("Internal Server Error", 500));
+        }
+        else if(emailType === RESET_PASSWORD) {
+            user = await User.findByIdAndUpdate(userID, {
+                resetPasswordToken:hashedToken,
+                resetPasswordExpires:Date.now() + 90000
+            });
+            if (!user) return next(new ErrorHandler("Internal Server Error", 500));
         }
 
         const transporter = nodemailer.createTransport({
@@ -35,7 +42,10 @@ const sendMail = async(email:string, emailType:string, userID:mongoose.Schema.Ty
         const mailOptions = {
             from:process.env.TRANSPORTER_ID,
             to:email,
-            subject:"Verify your email",
+            subject:emailType === VERIFY ?
+                        "Verify your email"
+                        :
+                        "Update Your Password",
             html:`
             <html>
                 <head>
@@ -87,7 +97,7 @@ const sendMail = async(email:string, emailType:string, userID:mongoose.Schema.Ty
                 </head>
                 <body>
                     <div class="mail_cont>
-                        <h3 class="subject">Subject: ${emailType === "VERIFY" ? "Please Verify Your Email Address" : "Please Verify Your Email To Change Password"}</h3>
+                        <h3 class="subject">Subject: ${emailType === "VERIFY" ? "Please Verify Your Email Address" : "Please Verify Your Email To Update Password"}</h3>
                         <div class="receiver">Dear ${user?.name},</div>
                         <div class="mail_para">
                             ${emailType === "VERIFY"||emailType === "REGISTER" ? "Thank you for registering with Ecommerce! To ensure the security of your account and access all features, please verify your email address by clicking the link below:" : "To change your password first We need to verify it's you"}
