@@ -5,6 +5,7 @@ import { AuthenticatedUserRequest } from "../middlewares/auth";
 import mongoose from "mongoose";
 import { RESET_PASSWORD, VERIFY } from "../constants/constants";
 import sendMail from "../utils/mailer.util";
+import bcryptjs from "bcryptjs";
 
 
 export const register = async(req:Request, res:Response, next:NextFunction) => {
@@ -71,18 +72,24 @@ export const me  = async(req:Request, res:Response, next:NextFunction) => {
 };
 export const updateMe  = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {name, email, password, mobile, house, street, city, state, zip} = req.body;
+        const {oldPassword, name, email, password, mobile, house, street, city, state, zip} = req.body;
         const user = (req as AuthenticatedUserRequest).user;
+
 
         if (!user) return next(new ErrorHandler("user not found", 404));
 
+        const isPasswordMatched = await bcryptjs.compare(oldPassword, user.password);
+
+        
         const isAddressExist = user.address.find((item) => item.house === house && item.street === street && item.city === city && item.state === state && item.zip === zip);
+        
+        if (!isPasswordMatched)  return next(new ErrorHandler("wrong email or password", 401));
 
         if (isAddressExist) {
             const updateMe = await User.findByIdAndUpdate(user._id, {
                 ...(name&&{name}),
                 ...(email&&{email}),
-                ...(password&&{password}),
+                ...(password&&{password:await bcryptjs.hash(password, 6)}),
                 ...(mobile&&{mobile})
             });
             
@@ -92,7 +99,7 @@ export const updateMe  = async(req:Request, res:Response, next:NextFunction) => 
             const updateMe = await User.findByIdAndUpdate(user._id, {
                 ...(name&&{name}),
                 ...(email&&{email}),
-                ...(password&&{password}),
+                ...(password&&{password:await bcryptjs.hash(password, 6)}),
                 ...(mobile&&{mobile}),
                 ...(street&&city&&state&&zip&&{$push:{address:{house, street, city, state, zip}}})
             });
