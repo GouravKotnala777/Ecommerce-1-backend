@@ -78,14 +78,13 @@ export const updateMe  = async(req:Request, res:Response, next:NextFunction) => 
 
         if (!user) return next(new ErrorHandler("user not found", 404));
 
-        const isPasswordMatched = await bcryptjs.compare(oldPassword, user.password);
-
         
         const isAddressExist = user.address.find((item) => item.house === house && item.street === street && item.city === city && item.state === state && item.zip === zip);
-        
-        if (!isPasswordMatched)  return next(new ErrorHandler("wrong email or password", 401));
 
         if (isAddressExist) {
+            if (!oldPassword)  return next(new ErrorHandler("old password is undefined", 400));
+            const isPasswordMatched = await bcryptjs.compare(oldPassword, user.password);
+            if (!isPasswordMatched)  return next(new ErrorHandler("wrong email or password", 401));
             const updateMe = await User.findByIdAndUpdate(user._id, {
                 ...(name&&{name}),
                 ...(email&&{email}),
@@ -97,10 +96,10 @@ export const updateMe  = async(req:Request, res:Response, next:NextFunction) => 
         }
         else{
             const updateMe = await User.findByIdAndUpdate(user._id, {
-                ...(name&&{name}),
-                ...(email&&{email}),
-                ...(password&&{password:await bcryptjs.hash(password, 6)}),
-                ...(mobile&&{mobile}),
+                //...(name&&{name}),
+                //...(email&&{email}),
+                //...(password&&{password:await bcryptjs.hash(password, 6)}),
+                //...(mobile&&{mobile}),
                 ...(street&&city&&state&&zip&&{$push:{address:{house, street, city, state, zip}}})
             });
 
