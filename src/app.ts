@@ -16,6 +16,7 @@ import Stripe from "stripe";
 import orderRouter from "./routers/orderRouter";
 import http from "http";
 import { Server } from "socket.io";
+import chatRouter from "./routers/chatRouter";
 
 config({path:"./.env"});
 
@@ -60,6 +61,7 @@ app.use("/api/v1/review", reviewRouter);
 app.use("/api/v1/coupon", couponRouter);
 app.use("/api/v1/payment", paymentRouter);
 app.use("/api/v1/order", orderRouter);
+app.use("/api/v1/chat", chatRouter);
 
 app.get("/test", (req, res, next) => {
     return res.status(200).json({success:true, message:`server is running at port no ${process.env.PORT}`})
@@ -89,8 +91,8 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on("adminSelectedUser", ({userID, adminName, defaultMsg}) => {
-        io.to(users[userID]?.socketID).emit("adminSelectedUserBE", {adminName, defaultMsg});
+    socket.on("adminSelectedUser", ({userID, adminID, adminName, defaultMsg}) => {
+        io.to(users[userID]?.socketID).emit("adminSelectedUserBE", {adminID, adminName, defaultMsg});
     });
 
     socket.on("adminEndedChat", ({userID, defaultMsg}) => {
