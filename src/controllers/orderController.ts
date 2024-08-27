@@ -3,8 +3,9 @@ import Order from "../models/orderModel";
 import { AuthenticatedUserRequest } from "../middlewares/auth";
 import { ErrorHandler } from "../utils/utilities";
 import Cart from "../models/cartModel";
-import mongoose, { ObjectId } from "mongoose";
+import mongoose from "mongoose";
 import Coupon from "../models/couponModel";
+import Review from "../models/reviewModel";
 
 
 export const newOrder = async(req:Request, res:Response, next:NextFunction) => {
@@ -47,6 +48,14 @@ export const newOrder = async(req:Request, res:Response, next:NextFunction) => {
         });
         
         if (!order) return(next(new ErrorHandler("Internal server error", 500)));
+
+        const arrayOfProductIDs = orderItems.map((product) => product.productID);
+
+        await Review.updateMany({
+            userID,
+            productID:{$in:arrayOfProductIDs},
+            isPurchaseVerified:false
+        }, {$set:{isPurchaseVerified:true}});        
 
         if (parent === "cart") {
             const cartProducts:{productID:mongoose.Types.ObjectId; quantity:number;}[] = [];

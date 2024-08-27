@@ -9,6 +9,7 @@ export interface ReviewTypes {
     createdAt: Date;
     updatedAt: Date;
     helpfulCount: number;
+    isPurchaseVerified: boolean;
 }
 
 const reviewSchema = new mongoose.Schema<ReviewTypes>({
@@ -22,7 +23,11 @@ const reviewSchema = new mongoose.Schema<ReviewTypes>({
     },
     rating:{type:Number, default:0},
     comment:String,
-    helpfulCount:Number
+    helpfulCount:Number,
+    isPurchaseVerified:{
+        type:Boolean,
+        default:false
+    }
 }, {
     timestamps:true
 });

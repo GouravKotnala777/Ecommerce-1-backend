@@ -3,6 +3,7 @@ import { ErrorHandler } from "../utils/utilities";
 import Review from "../models/reviewModel";
 import { AuthenticatedUserRequest } from "../middlewares/auth";
 import Product from "../models/productModel";
+import Order from "../models/orderModel";
 
 
 export const createReview = async(req:Request, res:Response, next:NextFunction) => {
@@ -17,6 +18,15 @@ export const createReview = async(req:Request, res:Response, next:NextFunction) 
         
         const isReviewExist = await Review.findOne({userID, productID});
         const product = await Product.findById(productID);
+        const hasProductPurchased = await Order.findOne({
+            userID,
+            orderItems:{
+                $elemMatch:{
+                    productID
+                }
+            },
+            "paymentInfo.status":"succeeded"
+        });
 
         if (!product) return next(new ErrorHandler("Product not found", 404));
 
@@ -36,7 +46,8 @@ export const createReview = async(req:Request, res:Response, next:NextFunction) 
                 userID,
                 productID,
                 rating,
-                comment
+                comment,
+                isPurchaseVerified:hasProductPurchased?true:false
             });
             
             if (!review) return next(new ErrorHandler("Internal Server Error", 500));
