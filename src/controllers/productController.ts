@@ -308,3 +308,36 @@ export const searchProductByQuery = async(req:Request<{searchQry:string;}, {}, {
         
     }
 };
+export const similarProductRecommendation = async(req:Request<{}, {}, {category?:string[]; brand?:string[];}>, res:Response, next:NextFunction) => {
+    try {
+        const {category, brand} = req.body;
+
+        if (category?.length === 0 && brand?.length === 0) return next(new ErrorHandler("category and brand both are undefined", 400));
+
+        const products = await Product.find(
+            category?.length !== 0 && brand?.length !== 0 ?
+            {
+                category:{$nin:category},
+                brand:{$nin:brand}
+            }
+            :
+            {
+                ...(category?.length !== 0 &&{category:{$nin:category}}),
+                ...(brand?.length !== 0 &&{brand:{$in:brand}})
+            }
+
+        ).limit(20);
+
+        if (!products) return next(new ErrorHandler("Products not found in similarProductRecommendation", 404));
+
+
+        const totalProducts = products.length;
+
+
+        res.status(200).json({success:true, message:products, totalProducts});
+    } catch (error) {
+        console.log(error);
+        next(error);
+        
+    }
+};
