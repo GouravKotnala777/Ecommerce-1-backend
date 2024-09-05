@@ -94,3 +94,49 @@ export const removeReview = async(req:Request, res:Response, next:NextFunction) 
         next(error)
     }
 };
+export const updateVote = async(req:Request<{}, {}, {reviewID:string; voted:boolean|undefined}>, res:Response, next:NextFunction) => {
+    try {
+        const {reviewID, voted} = req.body;
+        const userID = (req as AuthenticatedUserRequest).user._id;
+
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
+        if (!reviewID) return next(new ErrorHandler("reviewID not found", 404));
+        
+        const findReviewById = await Review.findById(reviewID);
+        if (!findReviewById) return next(new ErrorHandler("Review not found", 404));
+
+        const haveUserUpVotedAlready = findReviewById?.upVotes.find((userId) => userId.toString() === userID.toString());
+        const haveUserDownVotedAlready = findReviewById?.downVotes.find((userId) => userId.toString() === userID.toString());
+
+        if (haveUserUpVotedAlready) {
+            findReviewById.upVotes = findReviewById.upVotes.filter((userId) => userId.toString() !== userID.toString());
+            if (voted === false) {
+                findReviewById.downVotes.push(userID);
+            }
+        }
+        else if (haveUserDownVotedAlready) {
+            findReviewById.downVotes = findReviewById.downVotes.filter((userId) => userId.toString() !== userID.toString());
+            if (voted === true) {
+                findReviewById.upVotes.push(userID);
+            }
+        }
+        else{
+            if (voted === true) {
+                findReviewById.upVotes.push(userID);
+            }
+            else if (voted === false) {
+                findReviewById.downVotes.push(userID);
+            }
+            else{
+                console.log("Don nothing from updateVote reveiwController.ts");
+            }
+        }
+
+        await findReviewById.save();
+
+        return res.status(200).json({success:true, message:`you have ${voted === true ? "upvoted": voted === false ? "downvoted" : "undone"} this review`});
+    } catch (error) {
+        console.log(error);
+        next(error)
+    }
+};

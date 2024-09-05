@@ -10,6 +10,9 @@ export interface ReviewTypes {
     updatedAt: Date;
     helpfulCount: number;
     isPurchaseVerified: boolean;
+
+    upVotes:mongoose.Schema.Types.ObjectId[];
+    downVotes:mongoose.Schema.Types.ObjectId[];
 }
 
 const reviewSchema = new mongoose.Schema<ReviewTypes>({
@@ -27,7 +30,10 @@ const reviewSchema = new mongoose.Schema<ReviewTypes>({
     isPurchaseVerified:{
         type:Boolean,
         default:false
-    }
+    },
+    
+    upVotes:[{type:String}],
+    downVotes:[{type:String}]
 }, {
     timestamps:true
 });

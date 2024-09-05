@@ -81,7 +81,7 @@ export const singleProducts = async(req:Request, res:Response, next:NextFunction
 
         if (!productID) return (next(new ErrorHandler("productID not found", 404)));
         
-        const product = await Product.findById(productID).populate({model:"Review", path:"reviews", select:"_id userID rating comment isPurchaseVerified createdAt updatedAt", populate:({model:"User", path:"userID", select:"name email"})});
+        const product = await Product.findById(productID).populate({model:"Review", path:"reviews", select:"_id userID rating comment isPurchaseVerified upVotes downVotes createdAt updatedAt", populate:({model:"User", path:"userID", select:"name email"})});
 
         if (!product) return (next(new ErrorHandler("Product not found", 404)));
         
