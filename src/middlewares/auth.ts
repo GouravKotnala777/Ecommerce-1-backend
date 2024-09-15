@@ -2,9 +2,12 @@ import { Request, Response, NextFunction } from "express";
 import { ErrorHandler } from "../utils/utilities";
 import User, { UserTypes } from "../models/userModel";
 import jsonwebtoken, { JwtPayload } from "jsonwebtoken";
+import mongoose from "mongoose";
 
 export interface AuthenticatedUserRequest extends Request {
     user:UserTypes;
+    activityID:mongoose.Types.ObjectId;
+    token:string;
 }
 
 export const isUserAuthenticated = async(req:Request, res:Response, next:NextFunction) => {

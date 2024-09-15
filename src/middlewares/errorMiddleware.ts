@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import { ErrorHandler } from "../utils/utilities";
+import { AuthenticatedUserRequest } from "./auth";
 
 
 
-export const errorMiddleware = (err:ErrorHandler, req:Request, res:Response, next:NextFunction) => {
+export const errorMiddleware = async(err:ErrorHandler, req:Request, res:Response, next:NextFunction) => {
     const statusCode = err.statusCode || 500;
     let message:string;
 
@@ -17,7 +18,6 @@ export const errorMiddleware = (err:ErrorHandler, req:Request, res:Response, nex
     // console.log(err);
     console.log(message);
     console.log("((((((((((((((((((((((((((");
-    
 
     res.status(statusCode).json({success:false, message});
 };

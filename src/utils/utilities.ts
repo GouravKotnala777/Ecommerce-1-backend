@@ -19,10 +19,18 @@ export const sendToken = async(
     res:Response,
     next:NextFunction) => {
     try {
+        console.log("------------- (11.1)");
         const token = await model?.generateToken(model?._id);
 
+        console.log({token});
+        
+        console.log("------------- (11.2)");
+        
         res.cookie("userToken", token, cookieOptions);
+        console.log("------------- (11.3)");
+        return token;
     } catch (error) {
+        console.log("------------- (11.4)");
         console.log(error);
         next(error);
     }

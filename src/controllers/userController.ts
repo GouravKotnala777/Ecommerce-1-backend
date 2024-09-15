@@ -6,6 +6,8 @@ import mongoose from "mongoose";
 import { RESET_PASSWORD, VERIFY } from "../constants/constants";
 import sendMail from "../utils/mailer.util";
 import bcryptjs from "bcryptjs";
+import { newActivity } from "../middlewares/userActivity.middleware";
+//import { newActivity } from "../utils/userActivity.util";
 
 
 export const register = async(req:Request, res:Response, next:NextFunction) => {
@@ -35,29 +37,93 @@ export const register = async(req:Request, res:Response, next:NextFunction) => {
 };
 export const login  = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {email, password} = req.body;
+        const {email, password,
+            action, ipAddress, userAgent, userLocation, platform, device, referrer, success, errorDetails
+        }:{
+            email:string; password:string;
+            action:string; ipAddress:string; userAgent:string; userLocation:string; platform:string; device:string; referrer:string; success:boolean; errorDetails:string;
+        } = req.body;
         const isUserExist = await User.findOne({email});
-
+        if (!email || !password) return (next(new ErrorHandler("Wrong email or password 0", 404)));
         if (!isUserExist) return (next(new ErrorHandler("Wrong email or password 1", 404)));
-
+        if (!action || !ipAddress || !userAgent || !userLocation || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
+        
+        await newActivity(isUserExist._id, req, res, next);
+        //if (!email || !password) return (next(new ErrorHandler("All fields are required", 400)));
+        console.log("------------------ (8)");
+        
         const isPasswordMatched = await isUserExist.comparePassword(password);
-
+        console.log("------------------ (9)");
+        
         if (!isPasswordMatched) return (next(new ErrorHandler("Wrong email or password 2", 404)));
-
+        console.log("------------------ (10)");
+        
         if (isUserExist.emailVerified === true) {
-            await sendToken(isUserExist, res, next);
-            return res.status(200).json({success:true, message:"Login successfull"});
+            console.log("------------------ (10.1)");
+            const sendTokenReturnedValue = await sendToken(isUserExist, res, next);
+            
+            console.log("-------------- login ho gaya");
+            (req as AuthenticatedUserRequest).token = sendTokenReturnedValue as string; 
+            next(new ErrorHandler("", 400));
+            //return res.status(200).json({success:true, message:"Login successfull"});
         }
         else{
+            console.log("------------------ (10.2)");
             sendMail(isUserExist.email, VERIFY, isUserExist._id, next)
             return res.status(200).json({success:true, message:"Now verify your email"});
         }
-
+        
     } catch (error) {
+        console.log("------------------ (11.0 error)");
+        //await newActivity("", {userID:isUserExist._id, action, ipAddress, userAgent, userLocation, platform, device, referrer, success, errorDetails}, res, next);
         console.log(error);
         next(error);
     }
 };
+//export const login  = async(req:Request, res:Response, next:NextFunction) => {
+//    try {
+//        const {email, password,
+//            action, ipAddress, userAgent, userLocation, platform, device, referrer, success, errorDetails
+//        }:{
+//            email:string; password:string;
+//            action:string; ipAddress:string; userAgent:string; userLocation:string; platform:string; device:string; referrer:string; success:boolean; errorDetails:string;
+//        } = req.body;
+//        const isUserExist = await User.findOne({email});
+//        if (!isUserExist) return (next(new ErrorHandler("Wrong email or password 1", 404)));
+//        if (!action || !ipAddress || !userAgent || !userLocation || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
+        
+//        await newActivity(isUserExist._id, req, res, next);
+//        //if (!email || !password) return (next(new ErrorHandler("All fields are required", 400)));
+//        console.log("------------------ (8)");
+        
+//        const isPasswordMatched = await isUserExist.comparePassword(password);
+//        console.log("------------------ (9)");
+        
+//        if (!isPasswordMatched) return (next(new ErrorHandler("Wrong email or password 2", 404)));
+//        console.log("------------------ (10)");
+        
+//        if (isUserExist.emailVerified === true) {
+//            console.log("------------------ (11)");
+//            await sendToken(isUserExist, res, next);
+            
+//            console.log("-------------- login ho gaya");
+            
+//            next(new ErrorHandler("", 400));
+//            //return res.status(200).json({success:true, message:"Login successfull"});
+//        }
+//        else{
+//            console.log("------------------ (11.0)");
+//            sendMail(isUserExist.email, VERIFY, isUserExist._id, next)
+//            return res.status(200).json({success:true, message:"Now verify your email"});
+//        }
+        
+//    } catch (error) {
+//        console.log("------------------ (11.0 error)");
+//        //await newActivity("", {userID:isUserExist._id, action, ipAddress, userAgent, userLocation, platform, device, referrer, success, errorDetails}, res, next);
+//        console.log(error);
+//        next(error);
+//    }
+//};
 export const me  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const user = (req as AuthenticatedUserRequest).user;
@@ -72,42 +138,63 @@ export const me  = async(req:Request, res:Response, next:NextFunction) => {
 };
 export const updateMe  = async(req:Request, res:Response, next:NextFunction) => {
     try {
+        console.log("------------ (1)");
+        
         const {oldPassword, name, email, password, mobile, house, street, city, state, zip} = req.body;
         const user = (req as AuthenticatedUserRequest).user;
-
-
+        console.log({oldPassword, name, email, password, mobile, house, street, city, state, zip});
+        
+        console.log("------------ (2)");
+        
         if (!user) return next(new ErrorHandler("user not found", 404));
-
+        console.log("------------ (3)");
+        
+        await newActivity(user._id, req, res, next);
+        console.log("------------ (3.1)");
         
         const isAddressExist = user.address.find((item) => item.house === house && item.street === street && item.city === city && item.state === state && item.zip === zip);
-
-        if (isAddressExist) {
-            if (!oldPassword)  return next(new ErrorHandler("old password is undefined", 400));
-            const isPasswordMatched = await bcryptjs.compare(oldPassword, user.password);
-            if (!isPasswordMatched)  return next(new ErrorHandler("wrong email or password", 401));
-            const updateMe = await User.findByIdAndUpdate(user._id, {
-                ...(name&&{name}),
-                ...(email&&{email}),
-                ...(password&&{password:await bcryptjs.hash(password, 6)}),
-                ...(mobile&&{mobile})
-            });
-            
-            if (!updateMe) return next(new ErrorHandler("Internal Server Error", 500));
+        console.log("------------ (3.2)");
+        if (!house && !street && !city && !state && !zip) {
+                console.log("------------ (3.3)");
+                if (!oldPassword)  return next(new ErrorHandler("old password is undefined", 400));
+                console.log("------------ (3.4)");
+                const isPasswordMatched = await bcryptjs.compare(oldPassword, user.password);
+                console.log("------------ (3.5)");
+                if (!isPasswordMatched)  return next(new ErrorHandler("wrong email or password", 401));
+                console.log("------------ (3.6)");
+                const updateMe = await User.findByIdAndUpdate(user._id, {
+                    ...(name&&{name}),
+                    ...(email&&{email}),
+                    ...(password&&{password:await bcryptjs.hash(password, 6)}),
+                    ...(mobile&&{mobile})
+                });
+                
+                console.log("------------ (3.7)");
+                if (!updateMe) return next(new ErrorHandler("Internal Server Error", 500));
+                
+                console.log(updateMe);
+                console.log("------------ (3.8)");
         }
         else{
-            const updateMe = await User.findByIdAndUpdate(user._id, {
-                //...(name&&{name}),
-                //...(email&&{email}),
-                //...(password&&{password:await bcryptjs.hash(password, 6)}),
-                //...(mobile&&{mobile}),
-                ...(street&&city&&state&&zip&&{$push:{address:{house, street, city, state, zip}}})
-            });
-
-            if (!updateMe) return next(new ErrorHandler("Internal Server Error", 500));
+            if (!isAddressExist) {
+                const updateMe = await User.findByIdAndUpdate(user._id, {
+                    //...(name&&{name}),
+                    //...(email&&{email}),
+                    //...(password&&{password:await bcryptjs.hash(password, 6)}),
+                    //...(mobile&&{mobile}),
+                    ...(street&&city&&state&&zip&&{$push:{address:{house, street, city, state, zip}}})
+                });
+                
+                console.log("------------ (3.1011)");
+                if (!updateMe) return next(new ErrorHandler("Internal Server Error", 500));
+            }
         }
-
-        res.status(200).json({success:true, message:updateMe});
+        
+        console.log("------------ (3.11)");
+        next(new ErrorHandler("", 400));
+        //res.status(200).json({success:true, message:updateMe});
     } catch (error) {
+        console.log("------------ (3.12)");
         console.log(error);
         next(error);        
     }
@@ -213,19 +300,29 @@ export const myWishlist  = async(req:Request, res:Response, next:NextFunction) =
 };
 export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {verificationToken, emailType, newPassword}:{verificationToken:string; emailType:string; newPassword:string;} = req.body;
+        const {verificationToken, emailType, newPassword,
+            action, ipAddress, userAgent, location, platform, device, referrer, success, errorDetails
+        }:{verificationToken:string; emailType:string; newPassword:string;
+            action:string; ipAddress:string; userAgent:string; location:string; platform:string; device:string; referrer:string; success:boolean; errorDetails?:string;
+        } = req.body;
         
         if (emailType === VERIFY) {
             const user = await User.findOne({verificationToken, verificationTokenExpires:{$gt:Date.now()}});
     
             if (!user) return next(new ErrorHandler("User not found", 404));
             if (user.verificationToken === undefined) return next(new ErrorHandler("verificationToken not found", 404));
-            
+            if (!action || !ipAddress || !userAgent || !location || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
+
             user.verificationToken = undefined;
             user.verificationTokenExpires = undefined;
             user.emailVerified = true;
 
             await user.save();
+
+            //const newUserActivity = await UserActivity.create({
+            //    userID:isUserExist._id, action, ipAddress, userAgent, location, platform, device, referrer, success, errorDetails
+            //});
+            //if (!newUserActivity) return next(new ErrorHandler("Internal Server Error", 500));
 
             await sendToken(user, res, next);
 
@@ -312,24 +409,3 @@ export const aaPOST = async(req:Request, res:Response, next:NextFunction) => {
         next(error);        
     }
 };
-
-
-
-
-
-// const aaaa = async(req:Request, res:Response, next:NextFunction) => {
-//     try {
-        
-//     } catch (error) {
-//         console.log(error);
-//         next(error);        
-//     }
-// };
-// const aaaa = async(req:Request, res:Response, next:NextFunction) => {
-//     try {
-        
-//     } catch (error) {
-//         console.log(error);
-//         next(error);        
-//     }
-// };
