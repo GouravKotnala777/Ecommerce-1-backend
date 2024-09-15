@@ -1,11 +1,12 @@
 import mongoose, { Model } from "mongoose";
+import { UserLocationTypes } from "../controllers/userController";
 
 export interface UserActivityType extends Document {
     userID: mongoose.Types.ObjectId;
     action: string; // e.g., "signin", "logout", "register", "password_change"
     ipAddress: string;
     userAgent: string;
-    userLocation: string; // e.g., user's physical location based on IP
+    userLocation: UserLocationTypes; // e.g., user's physical location based on IP
     platform: string; // e.g., 'web', 'mobile', 'desktop'
     device: string; // e.g., 'iPhone', 'Android', 'Windows', etc.
     referrer: string; // Source from where the user accessed (e.g., Google, Direct)
@@ -26,11 +27,24 @@ const userActivitySchema = new mongoose.Schema<UserActivityType>({
     },
     ipAddress:String,
     userAgent:String,
-    userLocation:String,
+    userLocation:{
+        city:String,
+        country:String,
+        ip:String,
+        loc:String,
+        org:String,
+        postal:String,
+        readme:String,
+        region:String,
+        timezone:String
+    },
     platform:String,
     device:String,
     referrer:String,
-    success:Boolean,
+    success:{
+        type:Boolean,
+        default:false
+    },
     errorDetails:String
 },{
     timestamps:true

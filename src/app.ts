@@ -39,7 +39,7 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.json());
 app.use(cors({
-    origin:[`${process.env.CLIENT_URL}` as string],
+    origin:[`${process.env.CLIENT_URL}` as string, "https://ipinfo.io"],
     credentials: true
 }));
 

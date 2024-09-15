@@ -10,6 +10,20 @@ import { newActivity } from "../middlewares/userActivity.middleware";
 //import { newActivity } from "../utils/userActivity.util";
 
 
+export interface UserLocationTypes {
+    city?:string;
+    country?:string;
+    ip?:string;
+    loc?:string;
+    org?:string;
+    postal?:string;
+    readme?:string;
+    region?:string;
+    timezone?:string;
+}
+
+
+
 export const register = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {name, email, password, avatar, mobile}:{name:string; email:string; password:string; avatar:string; mobile:string;} = req.body;
@@ -35,18 +49,16 @@ export const register = async(req:Request, res:Response, next:NextFunction) => {
         next(error);
     }
 };
-export const login  = async(req:Request, res:Response, next:NextFunction) => {
+export const login  = async(req:Request<{}, {}, {email:string; password:string; action:string; userLocation:UserLocationTypes;}>, res:Response, next:NextFunction) => {
     try {
-        const {email, password,
-            action, ipAddress, userAgent, userLocation, platform, device, referrer, success, errorDetails
-        }:{
-            email:string; password:string;
-            action:string; ipAddress:string; userAgent:string; userLocation:string; platform:string; device:string; referrer:string; success:boolean; errorDetails:string;
-        } = req.body;
+        const {email, password} = req.body;
+        
         const isUserExist = await User.findOne({email});
-        if (!email || !password) return (next(new ErrorHandler("Wrong email or password 0", 404)));
+        
+        if (!email) return (next(new ErrorHandler("Wrong email or password 0", 404)));
         if (!isUserExist) return (next(new ErrorHandler("Wrong email or password 1", 404)));
-        if (!action || !ipAddress || !userAgent || !userLocation || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
+        //if (!action || !ipAddress || !userAgent || !userLocation || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
+        console.log("SSSSSSSSSSSSSSSSS");
         
         await newActivity(isUserExist._id, req, res, next);
         //if (!email || !password) return (next(new ErrorHandler("All fields are required", 400)));
