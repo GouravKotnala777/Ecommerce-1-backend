@@ -7,6 +7,7 @@ import { RESET_PASSWORD, VERIFY } from "../constants/constants";
 import sendMail from "../utils/mailer.util";
 import bcryptjs from "bcryptjs";
 import { newActivity } from "../middlewares/userActivity.middleware";
+import UserActivity from "../models/userActivityModel";
 //import { newActivity } from "../utils/userActivity.util";
 
 
@@ -259,8 +260,11 @@ export const logout  = async(req:Request, res:Response, next:NextFunction) => {
 
         if (!user) return next(new ErrorHandler("user not found", 404));
 
+        await newActivity(user._id, req, res, next);
+
         res.cookie("userToken", "", cookieOptions);
-        res.status(200).json({success:true, message:"Logout successfull"});
+        next(new ErrorHandler("", 400));
+        //res.status(200).json({success:true, message:"Logout successfull"});
     } catch (error) {
         console.log(error);
         next(error);        
@@ -384,6 +388,20 @@ export const findUser  = async(req:Request, res:Response, next:NextFunction) => 
         console.log({searchedUser});
 
         res.status(200).json({success:true, message:searchedUser});
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
+export const allUsersActivities  = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const allActivities = await UserActivity.find();
+
+        if (allActivities.length === 0) return next(new ErrorHandler("No User Activities found", 404));
+
+        console.log({allActivities});
+
+        res.status(200).json({success:true, message:allActivities});
     } catch (error) {
         console.log(error);
         next(error);        

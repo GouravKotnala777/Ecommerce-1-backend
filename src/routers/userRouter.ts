@@ -1,6 +1,6 @@
 import express from "express";
-import { aaGET, aaPOST, addToWishlist, findUser, login, logout, me, myWishlist, register, removeAddress, updateMe, forgetPassword, verifyEmail } from "../controllers/userController";
-import { isUserAuthenticated } from "../middlewares/auth";
+import { aaGET, aaPOST, addToWishlist, findUser, login, logout, me, myWishlist, register, removeAddress, updateMe, forgetPassword, verifyEmail, allUsersActivities } from "../controllers/userController";
+import { isUserAdmin, isUserAuthenticated } from "../middlewares/auth";
 import { newActivity, updateActivity } from "../middlewares/userActivity.middleware";
 
 const userRouter = express.Router();
@@ -13,9 +13,10 @@ userRouter.route("/me").get(isUserAuthenticated, me);
 userRouter.route("/forgetPassword").put(forgetPassword);
 userRouter.route("/update").put(isUserAuthenticated, updateMe, updateActivity)
                         .delete(isUserAuthenticated, removeAddress);
-userRouter.route("/logout").post(isUserAuthenticated, logout);
+userRouter.route("/logout").post(isUserAuthenticated, logout, updateActivity);
 userRouter.route("/verifyemail").post(verifyEmail);
 userRouter.route("/wishlist").get(isUserAuthenticated, myWishlist);
+userRouter.route("/activities").get(isUserAuthenticated, isUserAdmin, allUsersActivities);
 userRouter.route("/:productID/wishlist").put(isUserAuthenticated, addToWishlist);
 
 
