@@ -30,7 +30,9 @@ export const newActivity = async(userID:mongoose.Schema.Types.ObjectId, req:Requ
         const userAgent = req.headers["user-agent"];
         const referrer = req.headers.referer;
 
-        console.log({ipAddress});
+        console.log("JJJJJJJJJJJJJJJJJJJJJJJJJ");
+        console.log({action, userLocation});
+        console.log("JJJJJJJJJJJJJJJJJJJJJJJJJ");
         
         
         const getDeviceType = (userAgent:string) => {
