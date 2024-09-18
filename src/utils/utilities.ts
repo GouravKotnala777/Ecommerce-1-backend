@@ -14,6 +14,14 @@ export class ErrorHandler extends Error {
         // Error.captureStackTrace(this, this.constructor);
     }
 };
+//export class NextResponseHandler extends Error {
+//    constructor(public message:string, public statusCode:number){
+//        super(message);
+//        this.statusCode = statusCode;
+//        // this.message = message;
+//        // Error.captureStackTrace(this, this.constructor);
+//    }
+//};
 export const sendToken = async(
     model:(mongoose.Document<unknown, {}, UserTypes> & UserTypes & Required<{_id: mongoose.Schema.Types.ObjectId;}>) | null,
     res:Response,

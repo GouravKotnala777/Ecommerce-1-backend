@@ -77,7 +77,7 @@ export const login  = async(req:Request<{}, {}, {email:string; password:string; 
             
             console.log("-------------- login ho gaya");
             (req as AuthenticatedUserRequest).token = sendTokenReturnedValue as string; 
-            next(new ErrorHandler("", 400));
+            next({statusCode:200, data:{success:true, message:"Login successfull"}});
             //return res.status(200).json({success:true, message:"Login successfull"});
         }
         else{
@@ -204,7 +204,7 @@ export const updateMe  = async(req:Request, res:Response, next:NextFunction) => 
         }
         
         console.log("------------ (3.11)");
-        next(new ErrorHandler("", 400));
+        next({statusCode:200, data:{success:true, message:"Profile updated successfully"}});
         //res.status(200).json({success:true, message:updateMe});
     } catch (error) {
         console.log("------------ (3.12)");
@@ -263,7 +263,7 @@ export const logout  = async(req:Request, res:Response, next:NextFunction) => {
         await newActivity(user._id, req, res, next);
 
         res.cookie("userToken", "", cookieOptions);
-        next(new ErrorHandler("", 400));
+        next({statusCode:200, data:{success:true, message:"Logout successfull"}});
         //res.status(200).json({success:true, message:"Logout successfull"});
     } catch (error) {
         console.log(error);

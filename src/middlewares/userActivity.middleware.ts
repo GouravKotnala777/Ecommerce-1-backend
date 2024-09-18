@@ -21,6 +21,11 @@ export interface UserActivityFormType{
     errorDetails: string;
 };
 
+interface NextResposeData{
+    data:{
+        message:string;
+    };
+}
 
 export const newActivity = async(userID:mongoose.Schema.Types.ObjectId, req:Request<{}, {}, {email:string; password:string; action:string; userLocation:UserLocationTypes;}>, res:Response, next:NextFunction) => {
     try {
@@ -104,10 +109,16 @@ export const newActivity = async(userID:mongoose.Schema.Types.ObjectId, req:Requ
     } catch (error) {
         console.log("------------- (7)");
         console.log(error);
-        return res.status(400).json({success:false, message:"ERROR AAAA GAYA"});
+        next(error);
+        //return res.status(400).json({success:false, message:"ERROR AAAA GAYA"});
     }
 }
-export const updateActivity = async(err:ErrorHandler, req:Request<{}, {}, {email:string; password:string; action:string; userLocation:UserLocationTypes;}>, res:Response, next:NextFunction) => {
+export const updateActivity = async(nextRes:(ErrorHandler&NextResposeData), req:Request<{}, {}, {email:string; password:string; action:string; userLocation:UserLocationTypes;}>, res:Response, next:NextFunction) => {
+    console.log("OOOOOOOOOOOOOOOOOOOOOO1");
+    console.log(nextRes);
+    console.log("OOOOOOOOOOOOOOOOOOOOOO2");
+    
+    
     try {
         const {action, userLocation} = req.body;
         const activityID = (req as AuthenticatedUserRequest).activityID;
@@ -150,26 +161,6 @@ export const updateActivity = async(err:ErrorHandler, req:Request<{}, {}, {email
                 return 'Unknown';
             }
         };
-        //const getUserLocation = async() => {
-        //    try {
-        //        const res = await fetch(`https://freegeoip.app/json/127.0.0.1`);
-        //        if (res.ok) {
-        //            console.log("ok");
-        //        }
-        //        else{
-        //            console.log("not");
-        //        }
-        //        const userLocationData = await res.json();
-        //        console.log({userLocationData});
-                
-        //        return userLocationData||"America";
-        //    } catch (error) {
-        //        console.log(">>>>>>>>>>>>>>>>>>>>>");
-        //        console.log(error);
-        //        console.log(">>>>>>>>>>>>>>>>>>>>>");
-        //        return userLocationData;
-        //    }
-        //}
 
         console.log({plateform:getPlatformName(userAgent as string), userLocation:"faridabad", device:getDeviceType(userAgent as string)});
 
@@ -185,12 +176,14 @@ export const updateActivity = async(err:ErrorHandler, req:Request<{}, {}, {email
 
 
 
-        if (err.message) {
+        if (nextRes.message) {
             console.log("------------------ (14)");
+            console.log({activityID});
+            
             const updateUserActivity = await UserActivity.findByIdAndUpdate(activityID, {
-                errorDetails:err.message
+                errorDetails:nextRes.message
             });
-            return next(new ErrorHandler(err.message, err.statusCode));
+            return next(new ErrorHandler(nextRes.message, nextRes.statusCode));
         }
         console.log("------------------ (11.1)");
         
@@ -223,7 +216,7 @@ export const updateActivity = async(err:ErrorHandler, req:Request<{}, {}, {email
         const userID = loggedInUser._id;
         console.log("------------------ (12)");
 
-        console.log({action, ipAddress, userAgent, userLocation, platform, device, referrer, errorDetails:err.message});
+        console.log({action, ipAddress, userAgent, userLocation, platform, device, referrer, errorDetails:nextRes.message});
         
         
         if (!activityID) return next(new ErrorHandler("activityID not found", 404));
@@ -232,10 +225,10 @@ export const updateActivity = async(err:ErrorHandler, req:Request<{}, {}, {email
         console.log("------------------ (13)");
         
         
-        if (err.message) {
+        if (nextRes.message) {
             console.log("------------------ (14)");
             const updateUserActivity = await UserActivity.findByIdAndUpdate(activityID, {
-                errorDetails:err.message
+                errorDetails:nextRes.message
             });
         }
         else{
@@ -245,7 +238,7 @@ export const updateActivity = async(err:ErrorHandler, req:Request<{}, {}, {email
             });
         }
         
-        res.status(200).json({success:true, message:`user activity added for ${action}`})
+        res.status(nextRes.statusCode).json({success:true, message:nextRes.data.message});
     } catch (error) {
         console.log("------------------ (16)");
         console.log(error);

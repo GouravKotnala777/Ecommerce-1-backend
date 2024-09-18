@@ -22,7 +22,7 @@ const userActivitySchema = new mongoose.Schema<UserActivityType>({
     },
     action:{
         type:String,
-        enum:["signin", "logout", "register", "password_change", "profile_update"],
+        enum:["signin", "logout", "register", "password_change", "profile_update", "create_review", "delete_review", "wishlist", "add_to_cart", "remove_from_cart"],
         required:true
     },
     ipAddress:String,

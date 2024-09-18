@@ -4,6 +4,7 @@ import Review from "../models/reviewModel";
 import { AuthenticatedUserRequest } from "../middlewares/auth";
 import Product from "../models/productModel";
 import Order from "../models/orderModel";
+import { newActivity } from "../middlewares/userActivity.middleware";
 
 
 export const createReview = async(req:Request, res:Response, next:NextFunction) => {
@@ -12,12 +13,23 @@ export const createReview = async(req:Request, res:Response, next:NextFunction) 
         const userID = (req as AuthenticatedUserRequest).user._id;
         const {productID} = req.params;
 
-        if (!rating || !comment) return next(new ErrorHandler("All fields are required", 400));
         if (!userID) return next(new ErrorHandler("userID not found", 404));
+
+        await newActivity(userID, req, res, next);
+
+        console.log("=============== (1)");
+        
+        
+        if (!rating || !comment) return next(new ErrorHandler("All fields are required", 400));
+        console.log("=============== (2)");
         if (!productID) return next(new ErrorHandler("productID not found", 404));
         
+        console.log("=============== (3)");
+        
         const isReviewExist = await Review.findOne({userID, productID});
+        console.log("=============== (4)");
         const product = await Product.findById(productID);
+        console.log("=============== (5)");
         const hasProductPurchased = await Order.findOne({
             userID,
             orderItems:{
@@ -27,21 +39,25 @@ export const createReview = async(req:Request, res:Response, next:NextFunction) 
             },
             "paymentInfo.status":"succeeded"
         });
-
+        
+        console.log("=============== (6)");
         if (!product) return next(new ErrorHandler("Product not found", 404));
-
+        console.log("=============== (7)");
+        
         if (isReviewExist) {
             product.rating = ((product.rating * product.reviews.length) + (rating - isReviewExist.rating)) / (product.reviews.length);
-
+            
             isReviewExist.rating = rating;
             isReviewExist.comment = comment;
-
+            
             await product.save();
             await isReviewExist.save();
-
-            return res.status(200).json({success:true, message:"Review updated successfully"});
+            
+            console.log("=============== (8)");
+            next({statusCode:200, data:{success:true, message:"Review updated successfully"}});
         }
         else{
+            console.log("=============== (9)");
             const review = await Review.create({
                 userID,
                 productID,
@@ -51,18 +67,19 @@ export const createReview = async(req:Request, res:Response, next:NextFunction) 
             });
             
             if (!review) return next(new ErrorHandler("Internal Server Error", 500));
-
+            console.log("=============== (10)");
+            
             product.reviews.push(review._id);
             product.rating = ((product.rating * (product.reviews.length - 1)) + rating) / product.reviews.length;
-
+            
             await product.save();
-
-            return res.status(200).json({success:true, message:"Review created successfully"});
+            
+            console.log("=============== (11)");
+            next({statusCode:200, data:{success:true, message:"Review created successfully"}});
+            //return res.status(200).json({success:true, message:"Review created successfully"});
         }
-
-
-
     } catch (error) {
+        console.log("=============== (12)");
         console.log(error);
         next(error)
     }
@@ -74,6 +91,8 @@ export const removeReview = async(req:Request, res:Response, next:NextFunction) 
 
         if (!userID) return next(new ErrorHandler("userID not found", 404));
         if (!productID) return next(new ErrorHandler("productID not found", 404));
+
+        await newActivity(userID, req, res, next);
         
         const isReviewExist = await Review.findOneAndDelete({userID, productID});
         
@@ -88,7 +107,8 @@ export const removeReview = async(req:Request, res:Response, next:NextFunction) 
 
         await product.save();
 
-        res.status(200).json({success:true, message:"Review deleted successfully"});
+        next({statusCode:200, data:{success:true, message:"Review deleted successfully"}});
+        //res.status(200).json({success:true, message:"Review deleted successfully"});
     } catch (error) {
         console.log(error);
         next(error)
