@@ -12,12 +12,12 @@ userRouter.route("/login").post(login, updateActivity);
 userRouter.route("/me").get(isUserAuthenticated, me);
 userRouter.route("/forgetPassword").put(forgetPassword);
 userRouter.route("/update").put(isUserAuthenticated, updateMe, updateActivity)
-                        .delete(isUserAuthenticated, removeAddress);
+                        .delete(isUserAuthenticated, removeAddress, updateActivity);
 userRouter.route("/logout").post(isUserAuthenticated, logout, updateActivity);
 userRouter.route("/verifyemail").post(verifyEmail);
 userRouter.route("/wishlist").get(isUserAuthenticated, myWishlist);
 userRouter.route("/activities").get(isUserAuthenticated, isUserAdmin, allUsersActivities);
-userRouter.route("/:productID/wishlist").put(isUserAuthenticated, addToWishlist);
+userRouter.route("/:productID/wishlist").put(isUserAuthenticated, addToWishlist, updateActivity);
 
 
 

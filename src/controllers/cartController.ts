@@ -3,11 +3,17 @@ import Cart from "../models/cartModel";
 import { AuthenticatedUserRequest } from "../middlewares/auth";
 import { ErrorHandler } from "../utils/utilities";
 import mongoose from "mongoose";
+import { newActivity } from "../middlewares/userActivity.middleware";
 
 
 export const addToCart = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {productID, price, quantity}:{productID:string; price:number; quantity:number;} = req.body;
+        const userID = (req as AuthenticatedUserRequest).user._id;
+
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
+        
+        await newActivity(userID, req, res, next);
         
         if (!productID || !quantity || !price) return next(new ErrorHandler("All fields are requried", 400));
         
@@ -55,7 +61,7 @@ export const addToCart = async(req:Request, res:Response, next:NextFunction) => 
             console.log("************");
 
             const cart = await Cart.create({
-                userID:(req as AuthenticatedUserRequest).user._id,
+                userID,
                 products:{
                     productID,
                     quantity
@@ -67,8 +73,8 @@ export const addToCart = async(req:Request, res:Response, next:NextFunction) => 
     
             // console.log({cart});
         }
-
-        res.status(200).json({success:true, message:quantity > 1 ? `${quantity} Products added to cart` : `${quantity} Product added to cart`});        
+        next({statusCode:200, data:{success:true, message:quantity > 1 ? `${quantity} Products added to cart` : `${quantity} Product added to cart`}});
+        //res.status(200).json({success:true, message:quantity > 1 ? `${quantity} Products added to cart` : `${quantity} Product added to cart`});        
     } catch (error) {
         console.log(error);
         next(error);        
@@ -82,6 +88,8 @@ export const removeFromCart = async(req:Request, res:Response, next:NextFunction
 
         if (!isCartExist) return next(new ErrorHandler("Cart not exist", 404));
         
+        await newActivity(isCartExist.userID, req, res, next);
+
         const isProductExistInCart = isCartExist.products.find((product) => product.productID.toString() === productID);
         
         if (!isProductExistInCart) return next(new ErrorHandler("Product not exist in cart", 404));
@@ -110,7 +118,8 @@ export const removeFromCart = async(req:Request, res:Response, next:NextFunction
             return next(new ErrorHandler(isProductExistInCart.quantity > 1 ? `You only have ${isProductExistInCart.quantity} products in cart` : `You only have ${isProductExistInCart.quantity} product in cart`, 400))
         }
 
-        res.status(200).json({success:true, message:quantity > 1 ? `${quantity} Products removed from cart`:`${quantity} Product removed from cart`})        
+        next({statusCode:200, data:{success:true, message:quantity > 1 ? `${quantity} Products removed from cart`:`${quantity} Product removed from cart`}});
+        //res.status(200).json({success:true, message:quantity > 1 ? `${quantity} Products removed from cart`:`${quantity} Product removed from cart`})        
     } catch (error) {
         console.log(error);
         next(error);        

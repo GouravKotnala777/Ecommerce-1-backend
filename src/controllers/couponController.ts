@@ -3,10 +3,17 @@ import Coupon from "../models/couponModel";
 import { ErrorHandler, generateCoupon } from "../utils/utilities";
 import Cart from "../models/cartModel";
 import { AuthenticatedUserRequest } from "../middlewares/auth";
+import { newActivity } from "../middlewares/userActivity.middleware";
 
 
 export const createCoupon = async(req:Request, res:Response, next:NextFunction) => {
     try {
+        const userID = (req as AuthenticatedUserRequest).user._id;
+
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
+
+        await newActivity(userID, req, res, next);
+
         const {discountType, amount, minPerchaseAmount, startedDate, endDate, usageLimit, usedCount} = req.body;
 
         console.log({discountType, amount, minPerchaseAmount, startedDate, endDate, usageLimit, usedCount});
@@ -33,7 +40,8 @@ export const createCoupon = async(req:Request, res:Response, next:NextFunction) 
 
         if (!coupon) return(next(new ErrorHandler("Internal server error", 500)));
 
-        res.status(200).json({success:true, message:"Coupon created successfully"});
+        next({statusCode:200, data:{success:true, message:"Coupon created successfully"}});
+        //res.status(200).json({success:true, message:"Coupon created successfully"});
     } catch (error) {
         console.log(error);
         next(error);        

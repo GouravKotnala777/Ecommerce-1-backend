@@ -235,12 +235,12 @@ export const forgetPassword  = async(req:Request, res:Response, next:NextFunctio
 export const removeAddress  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {house, street, city, state, zip} = req.body;
-        const userID = (req as AuthenticatedUserRequest).user;
-
-        console.log({house, street, city, state, zip});
-        
+        const userID = (req as AuthenticatedUserRequest).user._id;
         if (!house && !street && !city && !state && !zip) return next(new ErrorHandler("Body for remove address is empty", 404));
         if (!userID) return next(new ErrorHandler("userID not found", 404));
+
+        await newActivity(userID, req, res, next);
+        
         
         const user = await User.findByIdAndUpdate(userID, {$pull:{
             address:{house, street, city, state, zip}
@@ -248,7 +248,8 @@ export const removeAddress  = async(req:Request, res:Response, next:NextFunction
         
         if (!user) return next(new ErrorHandler("user not found", 404));
 
-        res.status(200).json({success:true, message:"Address removed"});
+        next({statusCode:200, data:{success:true, message:"Address removed"}});
+        //res.status(200).json({success:true, message:"Address removed"});
     } catch (error) {
         console.log(error);
         next(error);        
@@ -273,10 +274,14 @@ export const logout  = async(req:Request, res:Response, next:NextFunction) => {
 export const addToWishlist  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {productID} = req.params;
+        const userID = (req as AuthenticatedUserRequest).user._id;
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
+
+        await newActivity(userID, req, res, next);
 
         if (!productID) return next(new ErrorHandler("productID not found", 404));
 
-        const user = await User.findById((req as AuthenticatedUserRequest).user._id);
+        const user = await User.findById(userID);
 
         const isWishlistedProduct = user?.wishlist.find((productId) => productId.toString() === productID);
 
@@ -285,14 +290,16 @@ export const addToWishlist  = async(req:Request, res:Response, next:NextFunction
 
             await user?.save();
 
-            return res.status(200).json({success:true, message:"Added to wishlist"});
+            next({statusCode:200, data:{success:true, message:"Added to wishlist"}});
+            //return res.status(200).json({success:true, message:"Added to wishlist"});
         }
         else{
             const productRemovedfromWishlist = await User.findByIdAndUpdate((req as AuthenticatedUserRequest).user._id, {$pull:{wishlist:new mongoose.Types.ObjectId(productID)}})
 
             if (!productRemovedfromWishlist) return next(new ErrorHandler("Internal Server Error", 500));
 
-            return res.status(200).json({success:true, message:"Removed from wishlist"});
+            next({statusCode:200, data:{success:true, message:"Removed from wishlist"}});
+            //return res.status(200).json({success:true, message:"Removed from wishlist"});
         }
 
     } catch (error) {

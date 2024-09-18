@@ -116,8 +116,10 @@ export const removeReview = async(req:Request, res:Response, next:NextFunction) 
 };
 export const updateVote = async(req:Request<{}, {}, {reviewID:string; voted:boolean|undefined}>, res:Response, next:NextFunction) => {
     try {
-        const {reviewID, voted} = req.body;
         const userID = (req as AuthenticatedUserRequest).user._id;
+        
+        await newActivity(userID, req as Request, res, next);
+        const {reviewID, voted} = req.body;
 
         if (!userID) return next(new ErrorHandler("userID not found", 404));
         if (!reviewID) return next(new ErrorHandler("reviewID not found", 404));
@@ -154,7 +156,8 @@ export const updateVote = async(req:Request<{}, {}, {reviewID:string; voted:bool
 
         await findReviewById.save();
 
-        return res.status(200).json({success:true, message:`you have ${voted === true ? "upvoted": voted === false ? "downvoted" : "undone"} this review`});
+        next({statusCode:200, data:{success:true, message:`you have ${voted === true ? "upvoted": voted === false ? "downvoted" : "undone"} this review`}});
+        //return res.status(200).json({success:true, message:`you have ${voted === true ? "upvoted": voted === false ? "downvoted" : "undone"} this review`});
     } catch (error) {
         console.log(error);
         next(error)

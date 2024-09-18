@@ -6,18 +6,22 @@ import Cart from "../models/cartModel";
 import mongoose from "mongoose";
 import Coupon from "../models/couponModel";
 import Review from "../models/reviewModel";
+import { newActivity } from "../middlewares/userActivity.middleware";
 
 
 export const newOrder = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const userID = (req as AuthenticatedUserRequest).user._id;
+        if (!userID) return(next(new ErrorHandler("userID not found", 404)));
+
+        await newActivity(userID, req, res, next);
+
         const {orderItems, totalPrice, coupon, transactionId, status, shippingType, message, parent}:{orderItems:{productID:string; quantity:number}[], totalPrice:number; coupon:string; transactionId:string; status:string; shippingType:string; message:string; parent:string;} = req.body;
         const now = new Date();
 
         console.log({orderItems, totalPrice, coupon, transactionId, status, shippingType, message, parent});
         
 
-        if (!userID) return(next(new ErrorHandler("userID not found", 404)));
         if (!totalPrice || !transactionId || !status || !shippingType) return(next(new ErrorHandler("something not found from orderController.ts", 404)));
         if (orderItems.length === 0) return(next(new ErrorHandler("productID not found", 404)));
         
@@ -55,7 +59,7 @@ export const newOrder = async(req:Request, res:Response, next:NextFunction) => {
             userID,
             productID:{$in:arrayOfProductIDs},
             isPurchaseVerified:false
-        }, {$set:{isPurchaseVerified:true}});        
+        }, {$set:{isPurchaseVerified:true}});
 
         if (parent === "cart") {
             const cartProducts:{productID:mongoose.Types.ObjectId; quantity:number;}[] = [];
@@ -85,7 +89,9 @@ export const newOrder = async(req:Request, res:Response, next:NextFunction) => {
 
             await myCart.save();
         }
-        res.status(200).json({success:true, message:"Order placed successfully"});
+
+        next({statusCode:200, data:{success:true, message:"Order placed successfully"}});
+        //res.status(200).json({success:true, message:"Order placed successfully"});
     } catch (error) {
         console.log(error);
         next(error);        
