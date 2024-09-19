@@ -162,7 +162,7 @@ export const updateMe  = async(req:Request, res:Response, next:NextFunction) => 
         if (!user) return next(new ErrorHandler("user not found", 404));
         console.log("------------ (3)");
         
-        await newActivity(user._id, req, res, next);
+        await newActivity(user._id, req, res, next, `update name-(${name}) email-(${email}) mobile-(${mobile}) house-(${house}) street-(${street}) city-(${city}) state-(${state}) zip-(${zip})`);
         console.log("------------ (3.1)");
         
         const isAddressExist = user.address.find((item) => item.house === house && item.street === street && item.city === city && item.state === state && item.zip === zip);
@@ -223,10 +223,12 @@ export const forgetPassword  = async(req:Request, res:Response, next:NextFunctio
 
         if (!user) return next(new ErrorHandler("User not found", 404));
 
+        await newActivity(user._id, req, res, next, `email-(${email})`);
+
         const aa = sendMail(user.email, RESET_PASSWORD, user._id, next);
         console.log({aa});
 
-        res.status(200).json({success:true, message:`A verification message has sent to this email ${email}`})
+        next({statusCode:200, data:{success:true, message:`A verification message has sent to this email ${email}`}});
     } catch (error) {
         console.log(error);
         next(error);
@@ -239,7 +241,7 @@ export const removeAddress  = async(req:Request, res:Response, next:NextFunction
         if (!house && !street && !city && !state && !zip) return next(new ErrorHandler("Body for remove address is empty", 404));
         if (!userID) return next(new ErrorHandler("userID not found", 404));
 
-        await newActivity(userID, req, res, next);
+        await newActivity(userID, req, res, next, `house-(${house}), street-(${street}), city-(${city}), state-(${state}), zip-(${zip})`);
         
         
         const user = await User.findByIdAndUpdate(userID, {$pull:{
@@ -277,7 +279,7 @@ export const addToWishlist  = async(req:Request, res:Response, next:NextFunction
         const userID = (req as AuthenticatedUserRequest).user._id;
         if (!userID) return next(new ErrorHandler("userID not found", 404));
 
-        await newActivity(userID, req, res, next);
+        await newActivity(userID, req, res, next, `add/remove productID-(${productID}) from wishlist`);
 
         if (!productID) return next(new ErrorHandler("productID not found", 404));
 
@@ -324,7 +326,7 @@ export const myWishlist  = async(req:Request, res:Response, next:NextFunction) =
 export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {verificationToken, emailType, newPassword,
-            action, ipAddress, userAgent, location, platform, device, referrer, success, errorDetails
+            action, ipAddress, userAgent, location, platform, device, referrer
         }:{verificationToken:string; emailType:string; newPassword:string;
             action:string; ipAddress:string; userAgent:string; location:string; platform:string; device:string; referrer:string; success:boolean; errorDetails?:string;
         } = req.body;
@@ -333,6 +335,10 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
             const user = await User.findOne({verificationToken, verificationTokenExpires:{$gt:Date.now()}});
     
             if (!user) return next(new ErrorHandler("User not found", 404));
+
+
+            await newActivity(user._id, req, res, next, `verify for emailType-(${emailType}) `);
+
             if (user.verificationToken === undefined) return next(new ErrorHandler("verificationToken not found", 404));
             if (!action || !ipAddress || !userAgent || !location || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
 
@@ -349,12 +355,15 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
 
             await sendToken(user, res, next);
 
-            return res.status(200).json({success:true, message:"Email verified successfully"});
+            next({statusCode:200, data:{success:true, message:"Email verified successfully"}});
         }
         else if (emailType === RESET_PASSWORD) {
             const user = await User.findOne({resetPasswordToken:verificationToken, resetPasswordExpires:{$gt:Date.now()}});
 
             if (!user) return next(new ErrorHandler("User not found", 404));
+
+            await newActivity(user._id, req, res, next, `verify for emailType-(${emailType}) `)
+
             if (user.resetPasswordToken === undefined) return next(new ErrorHandler("resetPasswordToken not found", 404));
             
             user.resetPasswordToken = undefined;
@@ -365,7 +374,7 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
 
             await sendToken(user, res, next);
 
-            return res.status(200).json({success:true, message:"Password updated successfully"});
+            next({statusCode:200, data:{success:true, message:"Password updated successfully"}});
         }
     } catch (error) {
         console.log(error);

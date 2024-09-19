@@ -10,11 +10,11 @@ userRouter.route("/aa").get(aaGET).post(aaPOST);
 userRouter.route("/new").post(register);
 userRouter.route("/login").post(login, updateActivity);
 userRouter.route("/me").get(isUserAuthenticated, me);
-userRouter.route("/forgetPassword").put(forgetPassword);
+userRouter.route("/forgetPassword").put(forgetPassword, updateActivity);
 userRouter.route("/update").put(isUserAuthenticated, updateMe, updateActivity)
                         .delete(isUserAuthenticated, removeAddress, updateActivity);
 userRouter.route("/logout").post(isUserAuthenticated, logout, updateActivity);
-userRouter.route("/verifyemail").post(verifyEmail);
+userRouter.route("/verifyemail").post(verifyEmail, updateActivity);
 userRouter.route("/wishlist").get(isUserAuthenticated, myWishlist);
 userRouter.route("/activities").get(isUserAuthenticated, isUserAdmin, allUsersActivities);
 userRouter.route("/:productID/wishlist").put(isUserAuthenticated, addToWishlist, updateActivity);

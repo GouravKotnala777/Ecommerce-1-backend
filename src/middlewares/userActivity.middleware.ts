@@ -27,7 +27,13 @@ interface NextResposeData{
     };
 }
 
-export const newActivity = async(userID:mongoose.Schema.Types.ObjectId, req:Request<{}, {}, {email:string; password:string; action:string; userLocation:UserLocationTypes;}>, res:Response, next:NextFunction) => {
+export const newActivity = async(
+    userID:mongoose.Schema.Types.ObjectId|null,
+    req:Request<{}, {}, {email:string; password:string; action:string; userLocation:UserLocationTypes;}>,
+    res:Response,
+    next:NextFunction,
+    message?:string
+) => {
     try {
         const {action, userLocation} = req.body;
         //const ipAddress = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
@@ -91,9 +97,9 @@ export const newActivity = async(userID:mongoose.Schema.Types.ObjectId, req:Requ
         if (!action || !userLocation || !platform || !device || !referrer) return next(new ErrorHandler("all fields are required", 400));
         console.log("------------- (2)");
         
-        if (!userID) return next(new ErrorHandler("userID not found", 404));
+        //if (!userID) return next(new ErrorHandler("userID not found", 404));
         const userActivity = await UserActivity.create({
-            userID, action, userLocation, platform, device, referrer, success:false
+            userID, action, userLocation, platform, device, referrer, message
         });
         console.log("------------- (3)");
         
@@ -181,7 +187,8 @@ export const updateActivity = async(nextRes:(ErrorHandler&NextResposeData), req:
             console.log({activityID});
             
             const updateUserActivity = await UserActivity.findByIdAndUpdate(activityID, {
-                errorDetails:nextRes.message
+                errorDetails:nextRes.message,
+                status:"failed"
             });
             return next(new ErrorHandler(nextRes.message, nextRes.statusCode));
         }
@@ -220,7 +227,7 @@ export const updateActivity = async(nextRes:(ErrorHandler&NextResposeData), req:
         
         
         if (!activityID) return next(new ErrorHandler("activityID not found", 404));
-        if (!userID) return next(new ErrorHandler("userID not found", 404));
+        //if (!userID) return next(new ErrorHandler("userID not found", 404));
         //if (!action || !userLocation || !platform || !device || !referrer) return next(new ErrorHandler("all fields are required", 400));
         console.log("------------------ (13)");
         
@@ -228,13 +235,15 @@ export const updateActivity = async(nextRes:(ErrorHandler&NextResposeData), req:
         if (nextRes.message) {
             console.log("------------------ (14)");
             const updateUserActivity = await UserActivity.findByIdAndUpdate(activityID, {
-                errorDetails:nextRes.message
+                errorDetails:nextRes.message,
+                status:"failed"
             });
         }
         else{
             console.log("------------------ (15)");
             const updateUserActivity = await UserActivity.findByIdAndUpdate(activityID, {
-                success:true
+                //success:true,
+                status:"succeeded"
             });
         }
         

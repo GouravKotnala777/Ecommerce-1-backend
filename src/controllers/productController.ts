@@ -3,6 +3,9 @@ import { ErrorHandler } from "../utils/utilities";
 import Product from "../models/productModel";
 import { uploadOnCloudinary } from "../utils/cloudinary.util";
 import { UploadApiResponse } from "cloudinary";
+import { newActivity } from "../middlewares/userActivity.middleware";
+import { AuthenticatedUserRequest } from "../middlewares/auth";
+import { UserLocationTypes } from "./userController";
 
 interface CreateProductBodyTypes {
     name:string;
@@ -39,11 +42,16 @@ export const createProduct = async(req:Request, res:Response, next:NextFunction)
             images, rating, sku, discount, brand, height, width, depth, weight, tags});
         
 
+        const userID = (req as AuthenticatedUserRequest).user._id;
 
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
 
+        await newActivity(userID, req, res, next, `create product with name-(${name}) category-(${category}) sub_category-(${sub_category}) sub_category_type-(${sub_category_type})`)
 
         if (!name || !description || !price || !category || !stock || !sub_category || !brand) return next(new ErrorHandler("All fields are requried", 400));
         
+
+
         const photo:UploadApiResponse|null = await uploadOnCloudinary(req.file?.path as string, "Ecommerce1/products");
 
         if (!photo?.secure_url) return next(new ErrorHandler("secure_url not found", 404));
@@ -54,7 +62,8 @@ export const createProduct = async(req:Request, res:Response, next:NextFunction)
 
         if (!product) return next(new ErrorHandler("Internal Server Error", 500));            
 
-        res.status(200).json({success:true, message:"Product created successfully"});        
+        next({statusCode:200, data:{success:true, message:"Product created successfully"}});
+        //res.status(200).json({success:true, message:"Product created successfully"});
     } catch (error) {
         console.log(error);
         next(error);        
@@ -244,12 +253,14 @@ export const getProductsOfSame = async(req:Request, res:Response, next:NextFunct
         next(error);        
     }
 };
-export const searchProductByQuery = async(req:Request<{searchQry:string;}, {}, {category?:string; sub_category?:string; brand?:string; price?:{minPrice:number; maxPrice:number;}; limit:number;}>, res:Response, next:NextFunction) => {
+export const searchProductByQuery = async(req:Request<{searchQry:string;}, {}, {category?:string; sub_category?:string; brand?:string; price?:{minPrice:number; maxPrice:number;}; limit:number; action:string; userLocation:UserLocationTypes;}>, res:Response, next:NextFunction) => {
     try {
         const {skip} = req.query;
         const {searchQry} = req.params;
         const {category, sub_category, brand, price, limit} = req.body;
 
+        
+        await newActivity(null, req as Request, res, next, `user searched for searchQry-(${searchQry}) category-(${category}) sub_category-(${sub_category}) brand-(${brand}) minPrice-(${price?.minPrice}) maxPrice-(${price?.maxPrice})`);
         
         console.log({searchQry, skip:Number(skip), category, sub_category, brand, limit});
         
@@ -300,8 +311,8 @@ export const searchProductByQuery = async(req:Request<{searchQry:string;}, {}, {
 
         const totalProducts = products.length;
 
-
-        res.status(200).json({success:true, message:products, totalProducts});
+        next({statusCode:200, data:{success:true, message:products, totalProducts}});
+        //res.status(200).json({success:true, message:products, totalProducts});
     } catch (error) {
         console.log(error);
         next(error);

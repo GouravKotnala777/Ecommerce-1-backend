@@ -12,9 +12,8 @@ export const createPayment = async(req:Request, res:Response, next:NextFunction)
 
         if (!userID) return next(new ErrorHandler("userID not found", 404));
 
-        await newActivity(userID, req, res, next);
-
         const {amount, quantity, amountFormRecomm} = req.body;
+        await newActivity(userID, req, res, next, `pay amount-(${amount}) amountFormRecomm-(${amountFormRecomm})`);
 
         if (!amount || !quantity) return (next(new ErrorHandler("Invalid amount or quantity", 400)))
         

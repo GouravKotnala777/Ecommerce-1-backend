@@ -13,7 +13,7 @@ export const addToCart = async(req:Request, res:Response, next:NextFunction) => 
 
         if (!userID) return next(new ErrorHandler("userID not found", 404));
         
-        await newActivity(userID, req, res, next);
+        await newActivity(userID, req, res, next, `add quantity-(${quantity}) productID-(${productID}) to cart`);
         
         if (!productID || !quantity || !price) return next(new ErrorHandler("All fields are requried", 400));
         
@@ -88,7 +88,7 @@ export const removeFromCart = async(req:Request, res:Response, next:NextFunction
 
         if (!isCartExist) return next(new ErrorHandler("Cart not exist", 404));
         
-        await newActivity(isCartExist.userID, req, res, next);
+        await newActivity(isCartExist.userID, req, res, next, `remove quantity-(${quantity}) productID-(${productID}) from cart`);
 
         const isProductExistInCart = isCartExist.products.find((product) => product.productID.toString() === productID);
         

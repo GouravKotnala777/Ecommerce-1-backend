@@ -1,11 +1,17 @@
 import { NextFunction, Request, Response } from "express";
 import Chat, { MessagesTypes } from "../models/chatModel";
 import { ErrorHandler } from "../utils/utilities";
+import { newActivity } from "../middlewares/userActivity.middleware";
+import { AuthenticatedUserRequest } from "../middlewares/auth";
 
 export const newChat = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {adminID, chats, isHelpful}:{adminID:string; chats:MessagesTypes[], isHelpful:boolean;} = req.body;
         
+        const userID = (req as AuthenticatedUserRequest).user._id;
+        if (!userID) return (next(new ErrorHandler("userID is not found", 404)));
+
+        await newActivity(userID, req, res, next, `chating with adminID-(${adminID}) chats-(${JSON.stringify(chats)})`)
         console.log({adminID, isHelpful});
         
 
@@ -20,7 +26,8 @@ export const newChat = async(req:Request, res:Response, next:NextFunction) => {
 
         if (!chat) return (next(new ErrorHandler("Internal server error", 500)));
 
-        res.status(200).json({success:true, message:chat._id});
+        next({statusCode:200, data:{success:true, message:chat._id}});
+        //res.status(200).json({success:true, message:chat._id});
     } catch (error) {
         console.log(error);
     }
@@ -68,6 +75,11 @@ export const updateChatsHelpfulness = async(req:Request, res:Response, next:Next
     try {
         const {chatID, isHelpful}:{chatID:string; isHelpful:boolean;} = req.body;
 
+        const userID = (req as AuthenticatedUserRequest).user._id;
+        if (!userID) return (next(new ErrorHandler("userID is not found", 404)));
+
+        await newActivity(userID, req, res, next, `update isHelpful-(${isHelpful}) for chatID-(${chatID})`)
+
         if (!chatID) return (next(new ErrorHandler("chatID not found", 404)));
         if (isHelpful === undefined) return (next(new ErrorHandler("isHelpful is required", 400)));
 
@@ -75,7 +87,8 @@ export const updateChatsHelpfulness = async(req:Request, res:Response, next:Next
             isHelpful
         });
 
-        res.status(200).json({success:true, message:"Chat review submitted successfully"});
+        next({statusCode:200, data:{success:true, message:"Chat review submitted successfully"}});
+        //res.status(200).json({success:true, message:"Chat review submitted successfully"});
     } catch (error) {
         console.log(error);
     }

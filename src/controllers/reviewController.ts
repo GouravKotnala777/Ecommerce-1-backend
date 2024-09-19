@@ -15,7 +15,7 @@ export const createReview = async(req:Request, res:Response, next:NextFunction) 
 
         if (!userID) return next(new ErrorHandler("userID not found", 404));
 
-        await newActivity(userID, req, res, next);
+        await newActivity(userID, req, res, next, `reviewed rating-(${rating}) & comment-(${(comment)})  to product ${productID}`);
 
         console.log("=============== (1)");
         
@@ -92,7 +92,7 @@ export const removeReview = async(req:Request, res:Response, next:NextFunction) 
         if (!userID) return next(new ErrorHandler("userID not found", 404));
         if (!productID) return next(new ErrorHandler("productID not found", 404));
 
-        await newActivity(userID, req, res, next);
+        await newActivity(userID, req, res, next, `delete review for product-(${productID})`);
         
         const isReviewExist = await Review.findOneAndDelete({userID, productID});
         
@@ -118,8 +118,8 @@ export const updateVote = async(req:Request<{}, {}, {reviewID:string; voted:bool
     try {
         const userID = (req as AuthenticatedUserRequest).user._id;
         
-        await newActivity(userID, req as Request, res, next);
         const {reviewID, voted} = req.body;
+        await newActivity(userID, req as Request, res, next, `vote-(${voted}) for reviewID-(${reviewID})`);
 
         if (!userID) return next(new ErrorHandler("userID not found", 404));
         if (!reviewID) return next(new ErrorHandler("reviewID not found", 404));

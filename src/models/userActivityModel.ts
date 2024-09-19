@@ -1,18 +1,22 @@
 import mongoose, { Model } from "mongoose";
 import { UserLocationTypes } from "../controllers/userController";
 
+
 export interface UserActivityType extends Document {
-    userID: mongoose.Types.ObjectId;
-    action: string; // e.g., "signin", "logout", "register", "password_change"
+    userID: mongoose.Types.ObjectId|null;
+    action: "signin"|"logout"|"register"|"verify_email"|"forget_password"|"password_change"|"update_profile"|"add_address"|"remove_address"|"create_review"|"delete_review"|"update_vote"|"update_wishlist"|"search_product"|"create_product"|"add_to_cart"|"remove_from_cart"|"create_payment_intend"|"create_payment_intend_again"|"new_order"|"new_order_fail"|"create_coupon"|"new_chat"|"is_chat_helpful"; // e.g., "signin", "logout", "register", "password_change"
     ipAddress: string;
     userAgent: string;
     userLocation: UserLocationTypes; // e.g., user's physical location based on IP
     platform: string; // e.g., 'web', 'mobile', 'desktop'
     device: string; // e.g., 'iPhone', 'Android', 'Windows', etc.
     referrer: string; // Source from where the user accessed (e.g., Google, Direct)
-    success: boolean; // Indicate if the action was successful or not
+    //success: boolean; // Indicate if the action was successful or not
     errorDetails: string; // Store any error details if the action failed
     timestamp: Date;
+
+    message?:string;
+    status:"pending"|"succeeded"|"failed"
 };
 
 const userActivitySchema = new mongoose.Schema<UserActivityType>({
@@ -22,7 +26,16 @@ const userActivitySchema = new mongoose.Schema<UserActivityType>({
     },
     action:{
         type:String,
-        enum:["signin", "logout", "register", "password_change", "update_profile", "add_address", "remove_address", "create_review", "delete_review", "update_wishlist", "add_to_cart", "remove_from_cart", "update_vote", "create_payment_intend", "create_payment_intend_again", "new_order", "new_order_fail", "create_coupon"],
+        enum:["signin", "logout", "register", "verify_email",
+            "forget_password", "password_change", "update_profile", "add_address", "remove_address",
+            "create_review", "delete_review", "update_vote",
+            "update_wishlist",
+            "search_product", "create_product",
+            "add_to_cart", "remove_from_cart",
+            "create_payment_intend", "create_payment_intend_again",
+            "new_order", "new_order_fail", "create_coupon",
+            "new_chat", "is_chat_helpful"
+        ],
         required:true
     },
     ipAddress:String,
@@ -41,11 +54,12 @@ const userActivitySchema = new mongoose.Schema<UserActivityType>({
     platform:String,
     device:String,
     referrer:String,
-    success:{
-        type:Boolean,
-        default:false
-    },
-    errorDetails:String
+    errorDetails:String,
+    message:String,
+    status:{
+        type:String,
+        default:"pending"
+    }
 },{
     timestamps:true
 });

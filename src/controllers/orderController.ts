@@ -14,9 +14,9 @@ export const newOrder = async(req:Request, res:Response, next:NextFunction) => {
         const userID = (req as AuthenticatedUserRequest).user._id;
         if (!userID) return(next(new ErrorHandler("userID not found", 404)));
 
-        await newActivity(userID, req, res, next);
-
         const {orderItems, totalPrice, coupon, transactionId, status, shippingType, message, parent}:{orderItems:{productID:string; quantity:number}[], totalPrice:number; coupon:string; transactionId:string; status:string; shippingType:string; message:string; parent:string;} = req.body;
+        await newActivity(userID, req, res, next, `order for orderItems-(${JSON.stringify(orderItems)}) transactionId-(${transactionId}) status-(${status})`);
+
         const now = new Date();
 
         console.log({orderItems, totalPrice, coupon, transactionId, status, shippingType, message, parent});
