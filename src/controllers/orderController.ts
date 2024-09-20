@@ -106,11 +106,25 @@ export const myOrders = async(req:Request, res:Response, next:NextFunction) => {
         
         if (!userID) return next(new ErrorHandler("userID not found", 404));
         
-        const orders = await Order.find({userID}).populate({model:"Product", path:"orderItems.productID", select:"name price images"});
+        const orders = await Order.find({userID}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"});
         //console.log(orders);
         //if (orders.length === 0) return next(new ErrorHandler(["You have not ordered anything yet!"], 204));
 
         res.status(200).json({success:true, message:orders});
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
+export const allOrders = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const userID = (req as AuthenticatedUserRequest).user._id;
+        
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
+        
+        const allOrders = await Order.find().populate({model:"Product", path:"orderItems.productID", select:"name price images category"});
+
+        res.status(200).json({success:true, message:allOrders});
     } catch (error) {
         console.log(error);
         next(error);        
