@@ -123,9 +123,43 @@ export const allOrders = async(req:Request, res:Response, next:NextFunction) => 
         
         if (!userID) return next(new ErrorHandler("userID not found", 404));
         
-        const allOrders = await Order.find({orderStatus:"delivered"}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"});
+        const [
+            allPendingOrders,
+            allConfirmedOrders,
+            allProcessingOrders,
+            allDispatchedOrders,
+            allShippedOrders,
+            allDeliveredOrders,
+            allCancelledOrders,
+            allFailedOrders,
+            allReturnedOrders,
+            allRefundedOrders
+        ] = await Promise.all([
+            Order.find({orderStatus:"pending"}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"}),
+            Order.find({orderStatus:"confirmed"}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"}),
+            Order.find({orderStatus:"processing"}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"}),
+            Order.find({orderStatus:"dispatched"}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"}),
+            Order.find({orderStatus:"shipped"}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"}),
+            Order.find({orderStatus:"delivered"}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"}),
+            Order.find({orderStatus:"cancelled"}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"}),
+            Order.find({orderStatus:"failed"}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"}),
+            Order.find({orderStatus:"returned"}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"}),
+            Order.find({orderStatus:"refunded"}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"})
+        ]);
 
-        res.status(200).json({success:true, message:allOrders});
+        //console.log({allPendingOrders});
+        //console.log({allConfirmedOrders});
+        //console.log({allProcessingOrders});
+        //console.log({allDispatchedOrders});
+        //console.log({allShippedOrders});
+        //console.log({allDeliveredOrders});
+        //console.log({allCancelledOrders});
+        //console.log({allFailedOrders});
+        //console.log({allReturnedOrders});
+        //console.log({allRefundedOrders});
+        
+
+        res.status(200).json({success:true, message:{allPendingOrders, allConfirmedOrders, allProcessingOrders, allDispatchedOrders, allShippedOrders, allDeliveredOrders, allCancelledOrders, allFailedOrders, allReturnedOrders, allRefundedOrders}});
     } catch (error) {
         console.log(error);
         next(error);        
