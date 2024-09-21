@@ -123,7 +123,7 @@ export const allOrders = async(req:Request, res:Response, next:NextFunction) => 
         
         if (!userID) return next(new ErrorHandler("userID not found", 404));
         
-        const allOrders = await Order.find().populate({model:"Product", path:"orderItems.productID", select:"name price images category"});
+        const allOrders = await Order.find({orderStatus:"delivered"}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"});
 
         res.status(200).json({success:true, message:allOrders});
     } catch (error) {
