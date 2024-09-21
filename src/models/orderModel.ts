@@ -9,10 +9,11 @@ export interface OrderTypes {
     }[];
     paymentInfo:{
         transactionId?:string;
-        status:string;
+        paymentStatus:string;
         shippingType:string;
         message:string;
     },
+    orderStatus:"pending"|"confirmed"|"processing"|"shipped"|"dispatched"|"delivered"|"cancelled"|"failed"|"returned"|"refunded";
     coupon:mongoose.Schema.Types.ObjectId|undefined;
     totalPrice: number;
     createdAt: Date;
@@ -38,7 +39,7 @@ const orderSchema = new mongoose.Schema<OrderTypes>({
     }],
     paymentInfo:{
         transactionId:String,
-        status:{
+        paymentStatus:{
             type:String,
             default:"pending"
         },
@@ -48,6 +49,11 @@ const orderSchema = new mongoose.Schema<OrderTypes>({
             default:"regular"
         },
         message:String
+    },
+    orderStatus:{
+        type:String,
+        enum:["pending", "confirmed", "processing", "shipped", "dispatched", "delivered", "cancelled", "failed", "returned", "refunded"],
+        default:"pending"
     },
     coupon:{
         type:mongoose.Schema.Types.ObjectId,

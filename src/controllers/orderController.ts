@@ -14,15 +14,15 @@ export const newOrder = async(req:Request, res:Response, next:NextFunction) => {
         const userID = (req as AuthenticatedUserRequest).user._id;
         if (!userID) return(next(new ErrorHandler("userID not found", 404)));
 
-        const {orderItems, totalPrice, coupon, transactionId, status, shippingType, message, parent}:{orderItems:{productID:string; quantity:number}[], totalPrice:number; coupon:string; transactionId:string; status:string; shippingType:string; message:string; parent:string;} = req.body;
-        await newActivity(userID, req, res, next, `order for orderItems-(${JSON.stringify(orderItems)}) transactionId-(${transactionId}) status-(${status})`);
+        const {orderItems, totalPrice, coupon, transactionId, paymentStatus, orderStatus, shippingType, message, parent}:{orderItems:{productID:string; quantity:number}[], totalPrice:number; coupon:string; transactionId:string; paymentStatus:string; orderStatus:"pending"|"confirmed"|"processing"|"shipped"|"dispatched"|"delivered"|"cancelled"|"failed"|"returned"|"refunded"; shippingType:string; message:string; parent:string;} = req.body;
+        await newActivity(userID, req, res, next, `order for orderItems-(${JSON.stringify(orderItems)}) transactionId-(${transactionId}) paymentStatus-(${paymentStatus}) orderStatus-(${orderStatus})`);
 
         const now = new Date();
 
-        console.log({orderItems, totalPrice, coupon, transactionId, status, shippingType, message, parent});
+        console.log({orderItems, totalPrice, coupon, transactionId, paymentStatus, orderStatus, shippingType, message, parent});
         
 
-        if (!totalPrice || !transactionId || !status || !shippingType) return(next(new ErrorHandler("something not found from orderController.ts", 404)));
+        if (!totalPrice || !transactionId || !shippingType) return(next(new ErrorHandler("something not found from orderController.ts", 404)));
         if (orderItems.length === 0) return(next(new ErrorHandler("productID not found", 404)));
         
 
@@ -43,10 +43,11 @@ export const newOrder = async(req:Request, res:Response, next:NextFunction) => {
             orderItems,
             paymentInfo:{
                 transactionId,
-                status,
+                paymentStatus,
                 shippingType,
                 message
             },
+            orderStatus,
             coupon,
             totalPrice
         });
