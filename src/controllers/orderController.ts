@@ -165,3 +165,28 @@ export const allOrders = async(req:Request, res:Response, next:NextFunction) => 
         next(error);        
     }
 };
+export const updateOrder = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const userID = (req as AuthenticatedUserRequest).user._id;
+        const {orderID, orderStatus} = req.body;
+
+        console.log(userID);
+        console.log({orderID, orderStatus});
+        
+        
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
+        if (!orderID || !orderStatus) return next(new ErrorHandler("all fields are required", 400));
+        
+        const orders = await Order.findByIdAndUpdate(orderID, {
+            orderStatus
+        });
+        //.populate({model:"Product", path:"orderItems.productID", select:"name price images category"});
+        //console.log(orders);
+        //if (orders.length === 0) return next(new ErrorHandler(["You have not ordered anything yet!"], 204));
+
+        res.status(200).json({success:true, message:"orderStatus updated"});
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
