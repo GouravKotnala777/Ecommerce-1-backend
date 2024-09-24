@@ -411,13 +411,20 @@ export const findUser  = async(req:Request, res:Response, next:NextFunction) => 
 };
 export const allUsersActivities  = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const allActivities = await UserActivity.find();
+        const {skip} = req.body;
 
-        if (allActivities.length === 0) return next(new ErrorHandler("No User Activities found", 404));
+        console.log({skip});
+        
+        if (skip === undefined) return next(new ErrorHandler("skip not found", 200));
+        
+        const activityCount = await UserActivity.countDocuments();
+        const activity = await UserActivity.find()
+                            .skip(Number(skip))
+                            .limit(1);
 
-        console.log({allActivities});
+        if (activity.length === 0) return next(new ErrorHandler("No User Activities found", 404));
 
-        res.status(200).json({success:true, message:allActivities});
+        res.status(200).json({success:true, message:{activity, activityCount}});
     } catch (error) {
         console.log(error);
         next(error);        

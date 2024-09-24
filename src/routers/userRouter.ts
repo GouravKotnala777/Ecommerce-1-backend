@@ -16,7 +16,7 @@ userRouter.route("/update").put(isUserAuthenticated, updateMe, updateActivity)
 userRouter.route("/logout").post(isUserAuthenticated, logout, updateActivity);
 userRouter.route("/verifyemail").post(verifyEmail, updateActivity);
 userRouter.route("/wishlist").get(isUserAuthenticated, myWishlist);
-userRouter.route("/activities").get(isUserAuthenticated, isUserAdmin, allUsersActivities);
+userRouter.route("/activities").post(isUserAuthenticated, isUserAdmin, allUsersActivities);
 userRouter.route("/:productID/wishlist").put(isUserAuthenticated, addToWishlist, updateActivity);
 
 
