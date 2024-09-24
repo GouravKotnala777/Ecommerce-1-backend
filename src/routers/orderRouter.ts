@@ -5,7 +5,7 @@ import { updateActivity } from "../middlewares/userActivity.middleware";
 const orderRouter = express.Router();
 
 orderRouter.route("/new").post(isUserAuthenticated, newOrder, updateActivity);
-orderRouter.route("/myOrders").get(isUserAuthenticated, myOrders);
+orderRouter.route("/myOrders").post(isUserAuthenticated, myOrders);
 orderRouter.route("/all").get(isUserAuthenticated, isUserAdmin, allOrders)
                         .put(isUserAuthenticated, isUserAdmin, updateOrder);
 
