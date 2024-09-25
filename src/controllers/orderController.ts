@@ -106,7 +106,7 @@ export const myOrders = async(req:Request, res:Response, next:NextFunction) => {
         const ordersCount = await Order.countDocuments({userID});
 
 
-        if (!skip) return next(new ErrorHandler("skip not found", 200));
+        if (skip === undefined) return next(new ErrorHandler("skip not found", 200));
         if (!userID) return next(new ErrorHandler("userID not found", 404));
         
         const orders = await Order.find({userID}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"})
