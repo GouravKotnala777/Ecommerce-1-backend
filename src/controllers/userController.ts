@@ -420,7 +420,7 @@ export const allUsersActivities  = async(req:Request, res:Response, next:NextFun
         const activityCount = await UserActivity.countDocuments();
         const activity = await UserActivity.find()
                             .skip(Number(skip))
-                            .limit(1);
+                            .limit(5);
 
         if (activity.length === 0) return next(new ErrorHandler("No User Activities found", 404));
 

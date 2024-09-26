@@ -111,7 +111,7 @@ export const myOrders = async(req:Request, res:Response, next:NextFunction) => {
         
         const orders = await Order.find({userID}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"})
                             .skip(Number(skip))
-                            .limit(1);
+                            .limit(5);
 
         res.status(200).json({success:true, message:{orders, ordersCount}});
     } catch (error) {
