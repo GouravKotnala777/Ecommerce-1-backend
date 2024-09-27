@@ -422,7 +422,7 @@ export const allUsersActivities  = async(req:Request, res:Response, next:NextFun
                             .skip(Number(skip))
                             .limit(5);
 
-        if (activity.length === 0) return next(new ErrorHandler("No User Activities found", 404));
+        if (activity.length === 0) return next(new ErrorHandler("No User Activities found", 200));
 
         res.status(200).json({success:true, message:{activity, activityCount}});
     } catch (error) {
