@@ -189,6 +189,42 @@ export const updateOrder = async(req:Request, res:Response, next:NextFunction) =
         res.status(200).json({success:true, message:"orderStatus updated"});
     } catch (error) {
         console.log(error);
-        next(error);        
+        next(error);
+    }
+};
+export const removeProductFormOrder = async(req:Request<{}, {}, {orderID:string; productID:string; removingProductPrice:number; removingProductQuantity:number;}>, res:Response, next:NextFunction) => {
+    try {
+        const userID = (req as AuthenticatedUserRequest).user._id;
+        const {orderID, productID, removingProductPrice, removingProductQuantity} = req.body;
+
+        //console.log(userID);
+        //console.log({orderID, productID, removingProductPrice, removingProductQuantity});
+        
+        
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
+        if (!orderID || !productID) return next(new ErrorHandler("all fields are required", 400));
+
+        const order = await Order.findByIdAndUpdate(orderID, {
+            $pull:{
+                orderItems:{
+                    productID
+                }
+            },
+            $inc:{
+                totalPrice:-(removingProductPrice*removingProductQuantity)
+            }
+        }, {new:true});
+        const savingRevomedProductAsNew = await Order.create({
+            userID,
+            orderItems:[{productID, quantity:removingProductQuantity}],
+            orderStatus:"cancelled",
+            totalPrice:removingProductPrice,
+            paymentInfo:order?.paymentInfo
+        })
+        
+        res.status(200).json({success:true, message:{order, savingRevomedProductAsNew}});
+    } catch (error) {
+        console.log(error);
+        next(error);
     }
 };
