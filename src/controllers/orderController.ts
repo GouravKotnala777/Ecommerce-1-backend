@@ -86,8 +86,28 @@ export const newOrder = async(req:Request, res:Response, next:NextFunction) => {
             });
 
             myCart.products = cartProducts;
-            myCart.totalPrice = myCart.totalPrice - totalPrice;
+            if (usedCoupon) {
+                if (usedCoupon.discountType === "fixed") {
+                    const couponValue = usedCoupon.amount;
+                    myCart.totalPrice = myCart.totalPrice - (totalPrice + couponValue);
+                }
+                else if (usedCoupon.discountType === "percentage") {
+                    const couponValue = (usedCoupon.amount/totalPrice)*100;
+                    myCart.totalPrice = myCart.totalPrice - (totalPrice + couponValue);
+                }
+            }
+            else{
+                myCart.totalPrice = myCart.totalPrice - totalPrice;
+            }
+            
+            if (shippingType === "express") {
+                myCart.totalPrice = myCart.totalPrice + 500;
+            }
+            else if (shippingType === "standard") {
+                myCart.totalPrice = myCart.totalPrice + 300;
+            }
 
+            
             await myCart.save();
         }
 
