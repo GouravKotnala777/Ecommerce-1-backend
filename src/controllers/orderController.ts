@@ -192,13 +192,13 @@ export const updateOrder = async(req:Request, res:Response, next:NextFunction) =
         next(error);
     }
 };
-export const removeProductFormOrder = async(req:Request<{}, {}, {orderID:string; productID:string; removingProductPrice:number; removingProductQuantity:number;}>, res:Response, next:NextFunction) => {
+export const removeProductFormOrder = async(req:Request<{}, {}, {orderID:string; productID:string; removingProductPrice:number; removingProductQuantity:number; updatedOrderState:"cancelled"|"returned"}>, res:Response, next:NextFunction) => {
     try {
         const userID = (req as AuthenticatedUserRequest).user._id;
-        const {orderID, productID, removingProductPrice, removingProductQuantity} = req.body;
+        const {orderID, productID, removingProductPrice, removingProductQuantity, updatedOrderState} = req.body;
 
-        //console.log(userID);
-        //console.log({orderID, productID, removingProductPrice, removingProductQuantity});
+        console.log(userID);
+        console.log({orderID, productID, removingProductPrice, removingProductQuantity, updatedOrderState});
         
         
         if (!userID) return next(new ErrorHandler("userID not found", 404));
@@ -217,8 +217,8 @@ export const removeProductFormOrder = async(req:Request<{}, {}, {orderID:string;
         const savingRevomedProductAsNew = await Order.create({
             userID,
             orderItems:[{productID, quantity:removingProductQuantity}],
-            orderStatus:"cancelled",
-            totalPrice:removingProductPrice,
+            orderStatus:updatedOrderState,
+            totalPrice:removingProductPrice*removingProductQuantity,
             paymentInfo:order?.paymentInfo
         })
         
