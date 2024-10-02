@@ -32,7 +32,6 @@ export const newOrder = async(req:Request, res:Response, next:NextFunction) => {
         if (usedCoupon) {
             if (now < usedCoupon.startedDate || now > usedCoupon.endDate) return next(new ErrorHandler("Coupon expired", 402));
             if (usedCoupon.usedCount >= usedCoupon.usageLimit) return next(new ErrorHandler("Coupon already used", 402));
-            usedCoupon.usageLimit = usedCoupon.usageLimit - 1;
             usedCoupon.usedCount = usedCoupon.usedCount + 1;
         }
 
