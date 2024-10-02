@@ -194,23 +194,19 @@ export const allOrders = async(req:Request, res:Response, next:NextFunction) => 
 export const updateOrder = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const userID = (req as AuthenticatedUserRequest).user._id;
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
+
         const {orderID, orderStatus} = req.body;
 
-        console.log(userID);
-        console.log({orderID, orderStatus});
+        await newActivity(userID, req as Request, res, next, `update order of orderID-(${orderID}) and make it's orderState-(${orderStatus})`);
         
-        
-        if (!userID) return next(new ErrorHandler("userID not found", 404));
         if (!orderID || !orderStatus) return next(new ErrorHandler("all fields are required", 400));
         
         const orders = await Order.findByIdAndUpdate(orderID, {
             orderStatus
         });
-        //.populate({model:"Product", path:"orderItems.productID", select:"name price images category"});
-        //console.log(orders);
-        //if (orders.length === 0) return next(new ErrorHandler(["You have not ordered anything yet!"], 204));
 
-        res.status(200).json({success:true, message:"orderStatus updated"});
+        next({statusCode:200, data:{success:true, message:"orderStatus updated"}});
     } catch (error) {
         console.log(error);
         next(error);
@@ -219,13 +215,12 @@ export const updateOrder = async(req:Request, res:Response, next:NextFunction) =
 export const removeProductFormOrder = async(req:Request<{}, {}, {orderID:string; productID:string; removingProductPrice:number; removingProductQuantity:number; updatedOrderState:"cancelled"|"returned"}>, res:Response, next:NextFunction) => {
     try {
         const userID = (req as AuthenticatedUserRequest).user._id;
+        if (!userID) return next(new ErrorHandler("userID not found", 404));
+
         const {orderID, productID, removingProductPrice, removingProductQuantity, updatedOrderState} = req.body;
 
-        console.log(userID);
-        console.log({orderID, productID, removingProductPrice, removingProductQuantity, updatedOrderState});
+        await newActivity(userID, req as Request, res, next, `remove product productID-(${productID}) of price-(${removingProductPrice}) with quantity-(${removingProductQuantity}) from order orderID-(${orderID}) and make it's orderState-(${updatedOrderState})`);
         
-        
-        if (!userID) return next(new ErrorHandler("userID not found", 404));
         if (!orderID || !productID) return next(new ErrorHandler("all fields are required", 400));
 
         const order = await Order.findByIdAndUpdate(orderID, {
@@ -246,7 +241,7 @@ export const removeProductFormOrder = async(req:Request<{}, {}, {orderID:string;
             paymentInfo:order?.paymentInfo
         })
         
-        res.status(200).json({success:true, message:{order, savingRevomedProductAsNew}});
+        next({statusCode:200, data:{success:true, message:{order, savingRevomedProductAsNew}}});
     } catch (error) {
         console.log(error);
         next(error);
