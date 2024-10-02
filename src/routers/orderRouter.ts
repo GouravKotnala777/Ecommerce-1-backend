@@ -6,7 +6,7 @@ const orderRouter = express.Router();
 
 orderRouter.route("/new").post(isUserAuthenticated, newOrder, updateActivity);
 orderRouter.route("/myOrders").post(isUserAuthenticated, myOrders)
-                            .put(isUserAuthenticated, removeProductFormOrder, updateActivity);
+                            .delete(isUserAuthenticated, removeProductFormOrder, updateActivity);
 orderRouter.route("/all").get(isUserAuthenticated, isUserAdmin, allOrders)
                         .put(isUserAuthenticated, isUserAdmin, updateOrder, updateActivity);
 
