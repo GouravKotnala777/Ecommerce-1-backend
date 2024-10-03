@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import Order from "../models/orderModel";
+import Order, { OrderTypesPopulated } from "../models/orderModel";
 import { AuthenticatedUserRequest } from "../middlewares/auth";
 import { ErrorHandler } from "../utils/utilities";
 import Cart from "../models/cartModel";
@@ -241,9 +241,27 @@ export const removeProductFormOrder = async(req:Request<{}, {}, {orderID:string;
             orderStatus:updatedOrderState,
             totalPrice:removingProductPrice*removingProductQuantity,
             paymentInfo:order?.paymentInfo
-        })
+        });
+
+        const newGeneratedOrder = await Order.findById(savingRevomedProductAsNew._id)
+                .populate({model:"Product", path:"orderItems.productID", select:"name price images"}) as OrderTypesPopulated;
+
+        const transformedOrderData = {
+            _id: newGeneratedOrder?.orderItems[0].productID._id,
+            orderID: newGeneratedOrder?._id,
+            name: newGeneratedOrder?.orderItems[0].productID.name,
+            price: newGeneratedOrder?.orderItems[0].productID.price,
+            quantity: 1,
+            images: newGeneratedOrder?.orderItems[0].productID.images,
+            orderStatus: newGeneratedOrder?.orderStatus,
+            createdAt: newGeneratedOrder?.createdAt,
+            transactionId: newGeneratedOrder?.paymentInfo.transactionId,
+            paymentStatus: newGeneratedOrder?.paymentInfo.paymentStatus,
+            shippingType: newGeneratedOrder?.paymentInfo.shippingType,
+            message: newGeneratedOrder?.paymentInfo.message
+        }
         
-        next({statusCode:200, data:{success:true, message:{order, savingRevomedProductAsNew}}});
+        next({statusCode:200, data:{success:true, message:transformedOrderData}});
     } catch (error) {
         console.log(error);
         next(error);

@@ -19,6 +19,30 @@ export interface OrderTypes {
     createdAt: Date;
     updatedAt: Date;
 }
+export interface OrderTypesPopulated {
+    _id: mongoose.Schema.Types.ObjectId;
+    userID: mongoose.Schema.Types.ObjectId;
+    orderItems: {
+        productID:{
+            _id:mongoose.Types.ObjectId;
+            name:string;
+            price:number;
+            images:string[];
+        };
+        quantity:number;
+    }[];
+    paymentInfo:{
+        transactionId?:string;
+        paymentStatus:string;
+        shippingType:string;
+        message:string;
+    },
+    orderStatus:"pending"|"confirmed"|"processing"|"shipped"|"dispatched"|"delivered"|"cancelled"|"failed"|"returned"|"refunded";
+    coupon:mongoose.Schema.Types.ObjectId|undefined;
+    totalPrice: number;
+    createdAt: Date;
+    updatedAt: Date;
+}
 
 const orderSchema = new mongoose.Schema<OrderTypes>({
     userID:{
@@ -66,6 +90,6 @@ const orderSchema = new mongoose.Schema<OrderTypes>({
 },
 {timestamps:true});
 
-const orderModel:Model<OrderTypes> = mongoose.models.Order || mongoose.model<OrderTypes>("Order", orderSchema);
+const orderModel:Model<OrderTypes|OrderTypesPopulated> = mongoose.models.Order || mongoose.model<OrderTypes>("Order", orderSchema);
 
 export default orderModel;
