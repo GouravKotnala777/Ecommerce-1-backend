@@ -211,14 +211,17 @@ export const updateOrder = async(req:Request, res:Response, next:NextFunction) =
         next(error);
     }
 };
-export const removeProductFormOrder = async(req:Request<{}, {}, {orderID:string; productID:string; removingProductPrice:number; removingProductQuantity:number; updatedOrderState:"cancelled"|"returned"}>, res:Response, next:NextFunction) => {
+export const removeProductFormOrder = async(req:Request<{}, {}, {orderID:string; productID:string; removingProductPrice:number; removingProductQuantity:number; updatedOrderState:"cancelled"|"returned"; orderCancelReason:string;}>, res:Response, next:NextFunction) => {
     try {
         const userID = (req as AuthenticatedUserRequest).user._id;
         if (!userID) return next(new ErrorHandler("userID not found", 404));
 
-        const {orderID, productID, removingProductPrice, removingProductQuantity, updatedOrderState} = req.body;
+        const {orderID, productID, removingProductPrice, removingProductQuantity, updatedOrderState, orderCancelReason} = req.body;
 
-        await newActivity(userID, req as Request, res, next, `remove product productID-(${productID}) of price-(${removingProductPrice}) with quantity-(${removingProductQuantity}) from order orderID-(${orderID}) and make it's orderState-(${updatedOrderState})`);
+        console.log({orderID, productID, removingProductPrice, removingProductQuantity, updatedOrderState, orderCancelReason});
+        
+
+        await newActivity(userID, req as Request, res, next, `remove product productID-(${productID}) of price-(${removingProductPrice}₹) with quantity-(${removingProductQuantity}) from order orderID-(${orderID}) and make it's orderState-(${updatedOrderState}) for reason-(${orderCancelReason})`);
         
         if (!orderID || !productID) return next(new ErrorHandler("all fields are required", 400));
 
