@@ -357,7 +357,7 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
 
 
                 if (user.verificationToken === undefined) return next(new ErrorHandler("verificationToken not found", 404));
-                if (!action || !ipAddress || !userAgent || !location || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
+                //if (!action || !ipAddress || !userAgent || !location || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
 
                 const newCoupon = await Coupon.create({
                     amount:100,
@@ -390,7 +390,7 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
                 console.log("NICHE WALE SE referrerUserID");
 
                 if (user.verificationToken === undefined) return next(new ErrorHandler("verificationToken not found", 404));
-                if (!action || !ipAddress || !userAgent || !location || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
+                //if (!action || !ipAddress || !userAgent || !location || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
 
                 user.verificationToken = undefined;
                 user.verificationTokenExpires = undefined;
