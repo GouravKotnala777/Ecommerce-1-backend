@@ -345,7 +345,7 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
             if (!user) return next(new ErrorHandler("User not found", 404));
 
 
-            await newActivity(user._id, req, res, next, `verify for emailType-(${emailType}) `);
+            //await newActivity(user._id, req, res, next, `verify for emailType-(${emailType}) `);
 
 
             if (referrerUserID) {
@@ -383,7 +383,8 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
                 await referedUser.save();
                 await sendToken(user, res, next);
 
-                next({statusCode:200, data:{success:true, message:"Email verified successfully"}});
+                //next({statusCode:200, data:{success:true, message:"Email verified successfully"}});
+                res.status(200).json({success:true, message:"Email verified successfully"});
             }
             else{
                 console.log("NICHE WALE SE referrerUserID");
@@ -398,7 +399,8 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
                 await user.save();
                 await sendToken(user, res, next);
 
-                next({statusCode:200, data:{success:true, message:"Email verified successfully"}});
+                //next({statusCode:200, data:{success:true, message:"Email verified successfully"}});
+                res.status(200).json({success:true, message:"Email verified successfully"});
             }
 
 
@@ -420,7 +422,8 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
 
             await sendToken(user, res, next);
 
-            next({statusCode:200, data:{success:true, message:"Password updated successfully"}});
+            //next({statusCode:200, data:{success:true, message:"Password updated successfully"}});
+            res.status(200).json({success:true, message:"Password updated successfully"});
         }
     } catch (error) {
         console.log(error);

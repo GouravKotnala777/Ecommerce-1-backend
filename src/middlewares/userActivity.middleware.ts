@@ -37,7 +37,7 @@ export const newActivity = async(
     try {
         const {action, userLocation} = req.body;
         //const ipAddress = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-        const ipAddress = userLocation?.ip;
+        const ipAddress = userLocation.ip;
         const userAgent = req.headers["user-agent"];
         const referrer = req.headers.referer;
 
@@ -128,7 +128,7 @@ export const updateActivity = async(nextRes:(ErrorHandler&NextResposeData), req:
     try {
         const {action, userLocation} = req.body;
         const activityID = (req as AuthenticatedUserRequest).activityID;
-        const ipAddress = userLocation?.ip;
+        const ipAddress = userLocation.ip;
         const userAgent = req.headers["user-agent"];
         const referrer = req.headers.referer;
         
