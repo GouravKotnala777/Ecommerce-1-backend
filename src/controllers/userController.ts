@@ -8,7 +8,7 @@ import sendMail from "../utils/mailer.util";
 import bcryptjs from "bcryptjs";
 import { newActivity } from "../middlewares/userActivity.middleware";
 import UserActivity from "../models/userActivityModel";
-import sendSMS from "../utils/sendSMS.util";
+//import sendSMS from "../utils/sendSMS.util";
 import Coupon from "../models/couponModel";
 //import { newActivity } from "../utils/userActivity.util";
 
