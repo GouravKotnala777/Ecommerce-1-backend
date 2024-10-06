@@ -359,12 +359,16 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
                 if (user.verificationToken === undefined) return next(new ErrorHandler("verificationToken not found", 404));
                 //if (!action || !ipAddress || !userAgent || !location || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
 
+                const today = new Date();
+                const oneMonthLaterDate = new Date(today);
+                oneMonthLaterDate.setMonth(oneMonthLaterDate.getMonth() + 1);
+
                 const newCoupon = await Coupon.create({
                     amount:100,
                     code:generateCoupon(),
                     discountType:"fixed",
-                    startedDate:Date.now(),
-                    endDate:Date.now()+2,
+                    startedDate:today,
+                    endDate:oneMonthLaterDate,
                     minPerchaseAmount:200,
                     usageLimit:1
                 });
