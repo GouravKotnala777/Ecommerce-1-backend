@@ -8,6 +8,7 @@ const userRouter = express.Router();
 
 userRouter.route("/aa").get(aaGET).post(aaPOST);
 userRouter.route("/new").post(register);
+//userRouter.route("/sms").post(sendReferralSMS);
 userRouter.route("/login").post(login, updateActivity);
 userRouter.route("/me").get(isUserAuthenticated, me);
 userRouter.route("/forgetPassword").put(forgetPassword, updateActivity);

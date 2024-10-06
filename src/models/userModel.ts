@@ -33,6 +33,14 @@ export interface UserTypes extends Document{
 
     comparePassword:(password:string) => Promise<boolean>;
     generateToken:(userID:mongoose.Schema.Types.ObjectId) => string;
+
+
+
+    referedUsers:{
+        userID:mongoose.Schema.Types.ObjectId;
+        coupon:mongoose.Types.ObjectId;
+        status:"pending"|"completed";
+    }[];
 }
 
 const userSchema = new mongoose.Schema<UserTypes>({
@@ -84,7 +92,21 @@ const userSchema = new mongoose.Schema<UserTypes>({
     profileImage: {
         type:String
     },
-    lastLogin: Date
+    lastLogin: Date,
+
+
+
+    referedUsers:[{
+        userID:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"User"
+        },
+        coupon:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Coupon"
+        },
+        status:String
+    }]
 }, {
     timestamps:true
 });

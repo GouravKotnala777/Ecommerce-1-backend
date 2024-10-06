@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../models/userModel";
-import {cookieOptions, ErrorHandler, sendToken} from "../utils/utilities";
+import {cookieOptions, ErrorHandler, generateCoupon, sendToken} from "../utils/utilities";
 import { AuthenticatedUserRequest } from "../middlewares/auth";
 import mongoose from "mongoose";
 import { RESET_PASSWORD, VERIFY } from "../constants/constants";
@@ -8,6 +8,8 @@ import sendMail from "../utils/mailer.util";
 import bcryptjs from "bcryptjs";
 import { newActivity } from "../middlewares/userActivity.middleware";
 import UserActivity from "../models/userActivityModel";
+import sendSMS from "../utils/sendSMS.util";
+import Coupon from "../models/couponModel";
 //import { newActivity } from "../utils/userActivity.util";
 
 
@@ -27,7 +29,11 @@ export interface UserLocationTypes {
 
 export const register = async(req:Request, res:Response, next:NextFunction) => {
     try {
-        const {name, email, password, avatar, mobile}:{name:string; email:string; password:string; avatar:string; mobile:string;} = req.body;
+        const {name, email, password, avatar, mobile, referrerUserID}:{name:string; email:string; password:string; avatar:string; mobile:string; referrerUserID?:string} = req.body;
+        //const {referrerUserID}:{referrerUserID?:string} = req.query;
+
+        console.log({referrerUserID});
+        
 
 
         const isUserExist = await User.findOne({email});
@@ -41,7 +47,7 @@ export const register = async(req:Request, res:Response, next:NextFunction) => {
 
         if (!newUser) return next(new ErrorHandler("Internal Server Error", 500));
 
-        await sendMail(newUser.email, VERIFY, newUser._id, next);
+        await sendMail(newUser.email, VERIFY, newUser._id, next, referrerUserID);
         await sendToken(newUser, res, next);
         
         res.status(200).json({success:true, message:"Now verify your email"});
@@ -326,9 +332,11 @@ export const myWishlist  = async(req:Request, res:Response, next:NextFunction) =
 export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {verificationToken, emailType, newPassword,
-            action, ipAddress, userAgent, location, platform, device, referrer
+            action, ipAddress, userAgent, location, platform, device, referrer,
+            referrerUserID
         }:{verificationToken:string; emailType:string; newPassword:string;
             action:string; ipAddress:string; userAgent:string; location:string; platform:string; device:string; referrer:string; success:boolean; errorDetails?:string;
+            referrerUserID?:string;
         } = req.body;
         
         if (emailType === VERIFY) {
@@ -339,23 +347,61 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
 
             await newActivity(user._id, req, res, next, `verify for emailType-(${emailType}) `);
 
-            if (user.verificationToken === undefined) return next(new ErrorHandler("verificationToken not found", 404));
-            if (!action || !ipAddress || !userAgent || !location || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
 
-            user.verificationToken = undefined;
-            user.verificationTokenExpires = undefined;
-            user.emailVerified = true;
+            if (referrerUserID) {
+                console.log("UPER WALE SE referrerUserID");
+                
+                const referedUser = await User.findById(referrerUserID);
 
-            await user.save();
+                if (!referedUser) return next(new ErrorHandler("Refered user not found", 404));
 
-            //const newUserActivity = await UserActivity.create({
-            //    userID:isUserExist._id, action, ipAddress, userAgent, location, platform, device, referrer, success, errorDetails
-            //});
-            //if (!newUserActivity) return next(new ErrorHandler("Internal Server Error", 500));
 
-            await sendToken(user, res, next);
+                if (user.verificationToken === undefined) return next(new ErrorHandler("verificationToken not found", 404));
+                if (!action || !ipAddress || !userAgent || !location || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
 
-            next({statusCode:200, data:{success:true, message:"Email verified successfully"}});
+                const newCoupon = await Coupon.create({
+                    amount:100,
+                    code:generateCoupon(),
+                    discountType:"fixed",
+                    startedDate:Date.now(),
+                    endDate:Date.now()+2,
+                    minPerchaseAmount:200,
+                    usageLimit:1
+                });
+
+                referedUser.referedUsers.push({
+                    userID:user._id,
+                    coupon:newCoupon._id,
+                    status:"pending"
+                });
+
+                user.verificationToken = undefined;
+                user.verificationTokenExpires = undefined;
+                user.emailVerified = true;
+
+                await user.save();
+                await referedUser.save();
+                await sendToken(user, res, next);
+
+                next({statusCode:200, data:{success:true, message:"Email verified successfully"}});
+            }
+            else{
+                console.log("NICHE WALE SE referrerUserID");
+
+                if (user.verificationToken === undefined) return next(new ErrorHandler("verificationToken not found", 404));
+                if (!action || !ipAddress || !userAgent || !location || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
+
+                user.verificationToken = undefined;
+                user.verificationTokenExpires = undefined;
+                user.emailVerified = true;
+
+                await user.save();
+                await sendToken(user, res, next);
+
+                next({statusCode:200, data:{success:true, message:"Email verified successfully"}});
+            }
+
+
         }
         else if (emailType === RESET_PASSWORD) {
             const user = await User.findOne({resetPasswordToken:verificationToken, resetPasswordExpires:{$gt:Date.now()}});
@@ -381,6 +427,20 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
         next(error);
     }
 };
+//export const sendReferralSMS  = async(req:Request, res:Response, next:NextFunction) => {
+//    try {
+//        const {toPhoneNumber, messageURL} = req.body;
+
+//        if (!toPhoneNumber || !messageURL) return next(new ErrorHandler("all fields are required", 400));
+
+//        await sendSMS(req, res, next, toPhoneNumber, messageURL);
+
+//        res.status(200).json({success:true, message:"OTP has been sent"})
+//    } catch (error) {
+//        console.log(error);
+//        next(error);
+//    }
+//};
 // ================  Admin's Controllers
 export const findUser  = async(req:Request, res:Response, next:NextFunction) => {
     try {
