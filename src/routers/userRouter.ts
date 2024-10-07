@@ -1,5 +1,5 @@
 import express from "express";
-import { aaGET, aaPOST, addToWishlist, findUser, login, logout, me, myWishlist, register, removeAddress, updateMe, forgetPassword, verifyEmail, allUsersActivities } from "../controllers/userController";
+import { aaGET, aaPOST, addToWishlist, findUser, login, logout, me, myWishlist, register, removeAddress, updateMe, forgetPassword, verifyEmail, allUsersActivities, myReferralGifts } from "../controllers/userController";
 import { isUserAdmin, isUserAuthenticated } from "../middlewares/auth";
 import { newActivity, updateActivity } from "../middlewares/userActivity.middleware";
 
@@ -17,6 +17,7 @@ userRouter.route("/update").put(isUserAuthenticated, updateMe, updateActivity)
 userRouter.route("/logout").post(isUserAuthenticated, logout, updateActivity);
 userRouter.route("/verifyemail").post(verifyEmail);
 userRouter.route("/wishlist").get(isUserAuthenticated, myWishlist);
+userRouter.route("/referee").get(isUserAuthenticated, myReferralGifts);
 userRouter.route("/activities").post(isUserAuthenticated, isUserAdmin, allUsersActivities);
 userRouter.route("/:productID/wishlist").put(isUserAuthenticated, addToWishlist, updateActivity);
 

@@ -285,6 +285,22 @@ export const myWishlist  = async(req:Request, res:Response, next:NextFunction) =
         next(error);
     }
 };
+export const myReferralGifts  = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const user = (req as AuthenticatedUserRequest).user;
+        if (!user) return next(new ErrorHandler("Login first", 401));
+
+        const referedUsers = await User.findById(user._id).populate({model:"Coupon", path:"referedUsers.coupon", select:"_id code discountType amount minPerchaseAmount startedDate endDate usageLimit usedCount"}).populate({model:"User", path:"referedUsers.userID", select:"name email"});
+
+
+
+
+        res.status(200).json({success:true, message:referedUsers?.referedUsers});
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
 export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {verificationToken, emailType, newPassword,
@@ -390,6 +406,7 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
         next(error);
     }
 };
+
 //export const sendReferralSMS  = async(req:Request, res:Response, next:NextFunction) => {
 //    try {
 //        const {toPhoneNumber, messageURL} = req.body;
