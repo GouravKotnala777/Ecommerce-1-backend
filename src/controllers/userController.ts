@@ -301,6 +301,52 @@ export const myReferralGifts  = async(req:Request, res:Response, next:NextFuncti
         next(error);        
     }
 };
+export const applyMyCoupon  = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const {couponID} = req.body;
+        const user = (req as AuthenticatedUserRequest).user;
+        if (!user) return next(new ErrorHandler("Login first", 401));
+
+        const me = await User.findById(user._id);
+
+        if (!me) return next(new ErrorHandler("Me not found", 404));
+
+        const giftFindResult = me.referedUsers.find((gift) => gift.coupon._id.toString() === couponID);
+
+        if (giftFindResult) {
+            me.referedUsers.forEach((gift) => {
+                if (gift.coupon._id.toString() === couponID) {
+                    gift.status = "completed";
+                    console.log("gift has found.....1");
+                }
+            });
+
+            const giftCoupon = await Coupon.findByIdAndUpdate(giftFindResult.coupon._id);
+            if (!giftCoupon) return next(new ErrorHandler("Internal server error", 500));
+
+            if (giftCoupon?.usageLimit > giftCoupon?.usedCount) {
+                giftCoupon.usedCount = giftCoupon.usedCount + 1;
+
+                await giftCoupon.save();
+            }
+            else{
+                console.log("gift already has been used");
+            }
+
+
+            console.log("gift has found.....2");
+            await me.save();
+        }
+        else{
+            console.log("gift not found.....");
+        }
+
+        res.status(200).json({success:true, message:"Gift card used successfully"});
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+}; 
 export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const {verificationToken, emailType, newPassword,
