@@ -4,6 +4,7 @@ import { ErrorHandler, generateCoupon } from "../utils/utilities";
 import Cart from "../models/cartModel";
 import { AuthenticatedUserRequest } from "../middlewares/auth";
 import { newActivity } from "../middlewares/userActivity.middleware";
+import User from "../models/userModel";
 
 
 export const createCoupon = async(req:Request, res:Response, next:NextFunction) => {
@@ -54,6 +55,24 @@ export const allCoupons = async(req:Request, res:Response, next:NextFunction) =>
         if (!coupons) return(next(new ErrorHandler("Coupons not found", 404)));
 
         res.status(200).json({success:true, message:coupons});
+    } catch (error) {
+        console.log(error);
+        next(error);        
+    }
+};
+export const myCoupons = async(req:Request, res:Response, next:NextFunction) => {
+    try {
+        const userID = (req as AuthenticatedUserRequest).user._id;
+        const loggedInUser = await User.findById(userID).populate({model:"Coupon", path:"coupons", select:"_id code discountType amount minPerchaseAmount startedDate endDate usageLimit usedCount"});
+        
+        if (!loggedInUser) return(next(new ErrorHandler("user not found", 404)));
+        
+        const myCoupons = loggedInUser.coupons;
+
+        //if (!coupons) return(next(new ErrorHandler("Coupons not found", 404)));
+
+
+        res.status(200).json({success:true, message:myCoupons});
     } catch (error) {
         console.log(error);
         next(error);        

@@ -41,6 +41,7 @@ export interface UserTypes extends Document{
         coupon:mongoose.Types.ObjectId;
         status:"pending"|"completed";
     }[];
+    coupons:mongoose.Schema.Types.ObjectId[];
 }
 
 const userSchema = new mongoose.Schema<UserTypes>({
@@ -106,6 +107,10 @@ const userSchema = new mongoose.Schema<UserTypes>({
             ref:"Coupon"
         },
         status:String
+    }],
+    coupons:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Coupon"
     }]
 }, {
     timestamps:true
