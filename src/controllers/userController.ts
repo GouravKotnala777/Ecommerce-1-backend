@@ -99,50 +99,6 @@ export const login  = async(req:Request<{}, {}, {email:string; password:string; 
         next(error);
     }
 };
-//export const login  = async(req:Request, res:Response, next:NextFunction) => {
-//    try {
-//        const {email, password,
-//            action, ipAddress, userAgent, userLocation, platform, device, referrer, success, errorDetails
-//        }:{
-//            email:string; password:string;
-//            action:string; ipAddress:string; userAgent:string; userLocation:string; platform:string; device:string; referrer:string; success:boolean; errorDetails:string;
-//        } = req.body;
-//        const isUserExist = await User.findOne({email});
-//        if (!isUserExist) return (next(new ErrorHandler("Wrong email or password 1", 404)));
-//        if (!action || !ipAddress || !userAgent || !userLocation || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
-        
-//        await newActivity(isUserExist._id, req, res, next);
-//        //if (!email || !password) return (next(new ErrorHandler("All fields are required", 400)));
-//        console.log("------------------ (8)");
-        
-//        const isPasswordMatched = await isUserExist.comparePassword(password);
-//        console.log("------------------ (9)");
-        
-//        if (!isPasswordMatched) return (next(new ErrorHandler("Wrong email or password 2", 404)));
-//        console.log("------------------ (10)");
-        
-//        if (isUserExist.emailVerified === true) {
-//            console.log("------------------ (11)");
-//            await sendToken(isUserExist, res, next);
-            
-//            console.log("-------------- login ho gaya");
-            
-//            next(new ErrorHandler("", 400));
-//            //return res.status(200).json({success:true, message:"Login successfull"});
-//        }
-//        else{
-//            console.log("------------------ (11.0)");
-//            sendMail(isUserExist.email, VERIFY, isUserExist._id, next)
-//            return res.status(200).json({success:true, message:"Now verify your email"});
-//        }
-        
-//    } catch (error) {
-//        console.log("------------------ (11.0 error)");
-//        //await newActivity("", {userID:isUserExist._id, action, ipAddress, userAgent, userLocation, platform, device, referrer, success, errorDetails}, res, next);
-//        console.log(error);
-//        next(error);
-//    }
-//};
 export const me  = async(req:Request, res:Response, next:NextFunction) => {
     try {
         const user = (req as AuthenticatedUserRequest).user;
