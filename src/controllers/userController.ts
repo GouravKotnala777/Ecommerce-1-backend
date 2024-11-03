@@ -48,7 +48,7 @@ export const register = async(req:Request, res:Response, next:NextFunction) => {
         if (!newUser) return next(new ErrorHandler("Internal Server Error", 500));
 
         await sendMail(newUser.email, VERIFY, newUser._id, next, referrerUserID);
-        await sendToken(newUser, res, next);
+        //await sendToken(newUser, res, next);
         
         res.status(200).json({success:true, message:"Now check your email for verify your email"});
     } catch (error) {
@@ -366,7 +366,7 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
             //await newActivity(user._id, req, res, next, `verify for emailType-(${emailType}) `);
 
 
-            if (referrerUserID && referrerUserID !== "null") {
+            if ((referrerUserID && referrerUserID !== "null") && (referrerUserID && referrerUserID !== "undefined")) {
                 console.log("UPER WALE SE referrerUserID");
                 
                 const referedUser = await User.findById(referrerUserID);
