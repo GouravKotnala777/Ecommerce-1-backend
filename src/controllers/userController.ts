@@ -50,7 +50,7 @@ export const register = async(req:Request, res:Response, next:NextFunction) => {
         await sendMail(newUser.email, VERIFY, newUser._id, next, referrerUserID);
         await sendToken(newUser, res, next);
         
-        res.status(200).json({success:true, message:"Now verify your email"});
+        res.status(200).json({success:true, message:"Now check your email for verify your email"});
     } catch (error) {
         console.log(error);
         next(error);
@@ -89,7 +89,7 @@ export const login  = async(req:Request<{}, {}, {email:string; password:string; 
         else{
             console.log("------------------ (10.2)");
             sendMail(isUserExist.email, VERIFY, isUserExist._id, next)
-            return res.status(200).json({success:true, message:"Now verify your email"});
+            return res.status(200).json({success:true, message:"Now check your email for verify your email"});
         }
         
     } catch (error) {
