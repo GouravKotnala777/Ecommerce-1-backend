@@ -366,7 +366,7 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
             //await newActivity(user._id, req, res, next, `verify for emailType-(${emailType}) `);
 
 
-            if (referrerUserID) {
+            if (referrerUserID && referrerUserID !== "null") {
                 console.log("UPER WALE SE referrerUserID");
                 
                 const referedUser = await User.findById(referrerUserID);
@@ -414,10 +414,11 @@ export const verifyEmail  = async(req:Request, res:Response, next:NextFunction) 
                 if (user.verificationToken === undefined) return next(new ErrorHandler("verificationToken not found", 404));
                 //if (!action || !ipAddress || !userAgent || !location || !platform || !device || !referrer) return (next(new ErrorHandler("Activity detailes are not provided", 400)));
 
+                
                 user.verificationToken = undefined;
                 user.verificationTokenExpires = undefined;
                 user.emailVerified = true;
-
+                
                 await user.save();
                 await sendToken(user, res, next);
 
