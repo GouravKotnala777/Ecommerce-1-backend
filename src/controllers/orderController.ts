@@ -134,9 +134,24 @@ export const myOrders = async(req:Request, res:Response, next:NextFunction) => {
         
         const orders = await Order.find({userID}).populate({model:"Product", path:"orderItems.productID", select:"name price images category"})
                             .skip(Number(skip))
-                            .limit(5);
+                            .limit(5) as OrderTypesPopulated[];
 
-        res.status(200).json({success:true, message:{orders, ordersCount}});
+        const transformedOrderData = orders.map((ordr) => ({
+            _id: ordr?.orderItems[0].productID._id,
+            orderID: ordr?._id,
+            name: ordr?.orderItems[0].productID.name,
+            price: ordr?.orderItems[0].productID.price,
+            quantity: 1,
+            images: ordr?.orderItems[0].productID.images,
+            orderStatus: ordr?.orderStatus,
+            createdAt: ordr?.createdAt,
+            transactionId: ordr?.paymentInfo.transactionId,
+            paymentStatus: ordr?.paymentInfo.paymentStatus,
+            shippingType: ordr?.paymentInfo.shippingType,
+            message: ordr?.paymentInfo.message
+        }));
+
+        res.status(200).json({success:true, message:{orders:transformedOrderData, ordersCount}});
     } catch (error) {
         console.log(error);
         next(error);        
