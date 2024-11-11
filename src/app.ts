@@ -17,6 +17,7 @@ import orderRouter from "./routers/orderRouter";
 import http from "http";
 import { Server } from "socket.io";
 import chatRouter from "./routers/chatRouter";
+import miscRouter from "./routers/miscRouter";
 
 config({path:"./.env"});
 
@@ -62,6 +63,7 @@ app.use("/api/v1/coupon", couponRouter);
 app.use("/api/v1/payment", paymentRouter);
 app.use("/api/v1/order", orderRouter);
 app.use("/api/v1/chat", chatRouter);
+app.use("/api/v1/misc", miscRouter);
 
 app.get("/test", (req, res, next) => {
     return res.status(200).json({success:true, message:`server is running at port no ${process.env.PORT}`})
