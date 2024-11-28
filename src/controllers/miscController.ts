@@ -45,11 +45,9 @@ export const getHeroSlider = async(req:Request, res:Response, next:NextFunction)
     try {
         const misc = await MiscModel.find();
         
-        if (misc[0] === undefined) return next(new ErrorHandler("misc[0] not found", 404));
+        const heroSlider = misc?.[0]?.heroSlider;
 
-        const heroSlider = misc[0].heroSlider;
-
-        res.status(200).json({success:true, message:heroSlider});
+        res.status(200).json({success:true, message:heroSlider?heroSlider:[]});
     } catch (error) {
         next(error);
     }
