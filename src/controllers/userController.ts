@@ -60,7 +60,7 @@ export const login  = async(req:Request<{}, {}, {email:string; password:string; 
     try {
         const {email, password} = req.body;
         
-        const isUserExist = await User.findOne({email});
+        const isUserExist = await User.findOne({email}).select("+password");
         
         if (!email) return (next(new ErrorHandler("Wrong email or password 0", 404)));
         if (!isUserExist) return (next(new ErrorHandler("Wrong email or password 1", 404)));
@@ -123,7 +123,11 @@ export const updateMe  = async(req:Request, res:Response, next:NextFunction) => 
         
         if (!user) return next(new ErrorHandler("user not found", 404));
         console.log("------------ (3)");
+
+        const findUserForPassword = await User.findById(user._id).select("+password");
         
+        if (!findUserForPassword) return next(new ErrorHandler("user for password not found", 404));
+
         await newActivity(user._id, req, res, next, `update name-(${name}) email-(${email}) mobile-(${mobile}) house-(${house}) street-(${street}) city-(${city}) state-(${state}) zip-(${zip})`);
         console.log("------------ (3.1)");
         
@@ -133,7 +137,7 @@ export const updateMe  = async(req:Request, res:Response, next:NextFunction) => 
                 console.log("------------ (3.3)");
                 if (!oldPassword)  return next(new ErrorHandler("old password is undefined", 400));
                 console.log("------------ (3.4)");
-                const isPasswordMatched = await bcryptjs.compare(oldPassword, user.password);
+                const isPasswordMatched = await bcryptjs.compare(oldPassword, findUserForPassword.password);
                 console.log("------------ (3.5)");
                 if (!isPasswordMatched)  return next(new ErrorHandler("wrong email or password", 401));
                 console.log("------------ (3.6)");
