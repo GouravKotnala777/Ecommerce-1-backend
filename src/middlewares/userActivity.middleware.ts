@@ -208,7 +208,7 @@ export const updateActivity = async(nextRes:(ErrorHandler&NextResposeData), req:
 
         if (!token) return next(new ErrorHandler("Token not found", 404));
 
-        const verifyToken = jsonwebtoken.verify(token, "thisissecret") as JwtPayload;
+        const verifyToken = jsonwebtoken.verify(token, process.env.USER_TOKEN_SECRET as string) as JwtPayload;
 
         const loggedInUser = await User.findById(verifyToken.id);
 

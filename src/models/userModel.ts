@@ -130,7 +130,7 @@ userSchema.methods.comparePassword = async function(password:string) {
     return await bcryptJS.compare(password, this.password);
 }
 userSchema.methods.generateToken = async function(userID:mongoose.Schema.Types.ObjectId) {
-    return jsonwebtoken.sign({id:userID}, "thisissecret", {expiresIn:"3d"});
+    return jsonwebtoken.sign({id:userID}, process.env.USER_TOKEN_SECRET as string, {expiresIn:"3d"});
 }
 
 
