@@ -47,7 +47,9 @@ export interface UserTypes extends Document{
 const userSchema = new mongoose.Schema<UserTypes>({
     name: {
         type:String,
-        required:true
+        required:true,
+        minlength:[3, "Name must be at least 3 characters long"],
+        maxlength:[15, "Name length must be less than 15 characters"]
     },
     email: {
         type:String,
@@ -56,7 +58,8 @@ const userSchema = new mongoose.Schema<UserTypes>({
     },
     password: {
         type:String,
-        required:true
+        required:true,
+        select:false
     },
     address:[{
         house: String,
@@ -67,7 +70,8 @@ const userSchema = new mongoose.Schema<UserTypes>({
     }],
     mobile: {
         type:String,
-        required:true
+        required:true,
+        minlength:[10, "Number must be at least 10 characters long"]
     },
     role: {
         type:String,
