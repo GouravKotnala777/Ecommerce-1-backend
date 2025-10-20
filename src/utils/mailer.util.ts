@@ -10,8 +10,15 @@ import mongoose from "mongoose";
 
 const sendMail = async(email:string, emailType:string, userID:mongoose.Schema.Types.ObjectId, next:NextFunction, referrerUserID?:string) => {
     try {
+
         let user;
         const hashedToken = await bcryptjs.hash(userID.toString(), 6);
+
+        if (!process.env.BREVO_KEY) throw new ErrorHandler("BREVO_KEY not found", 404);
+        if (!process.env.BREVO_URL) throw new ErrorHandler("BREVO_URL not found", 404);
+        if (!process.env.BREVO_USER_NAME) throw new ErrorHandler("BREVO_USER_NAME not found", 404);
+        if (!process.env.BREVO_EMAIL_ID) throw new ErrorHandler("BREVO_EMAIL_ID not found", 404);
+
 
 
         if (emailType === VERIFY) {
@@ -29,18 +36,8 @@ const sendMail = async(email:string, emailType:string, userID:mongoose.Schema.Ty
             if (!user) return next(new ErrorHandler("Internal Server Error", 500));
         }
 
-        const transporter = nodemailer.createTransport({
-            host:process.env.TRANSPORTER_HOST,
-            port:Number(process.env.TRANSPORTER_PORT),
-            secure:false,
-            auth:{
-                user:process.env.TRANSPORTER_ID,
-                pass:process.env.TRANSPORTER_PASSWORD
-            }
-        });
-
         const mailOptions = {
-            from:process.env.TRANSPORTER_ID,
+            from:process.env.BREVO_EMAIL_ID,
             to:email,
             subject:emailType === VERIFY ?
                         "Verify your email"
@@ -117,12 +114,39 @@ const sendMail = async(email:string, emailType:string, userID:mongoose.Schema.Ty
             `
         };
 
-        const resMail = transporter.sendMail(mailOptions);
-        return resMail;
+        const res = await fetch(process.env.BREVO_URL, {
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json",
+                "api-key":process.env.BREVO_KEY
+            },
+            body:JSON.stringify({
+                sender:{
+                    "name":process.env.BREVO_USER_NAME,
+                    "email":process.env.BREVO_EMAIL_ID
+                },
+                to:[{
+                    "email":email
+                }],
+                subject:mailOptions.subject,
+                textContent:"",
+                htmlContent:mailOptions.html
+            })
+        });
+        const data = await res.json();
+        console.log({data});
+
+        if (res.ok && data.messageId) {
+            console.log("Email sent successfully:", data.messageId);
+        }
+        else{
+            console.error("Failed to send email:", data);
+        }
+
+        return data.messageId?true:false;
     } catch (error) {
         console.log(error);
         throw new ErrorHandler("This error is from mailer.middleware.ts", 500);
     }
 };
-
 export default sendMail;
