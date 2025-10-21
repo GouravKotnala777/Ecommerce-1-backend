@@ -129,7 +129,7 @@ const sendMail = async(email:string, emailType:string, userID:mongoose.Schema.Ty
                     "email":email
                 }],
                 subject:mailOptions.subject,
-                textContent:"",
+                textContent:"text content",
                 htmlContent:mailOptions.html
             })
         });
